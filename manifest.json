@@ -1,0 +1,14 @@
+{
+  "name": "After Sales Tracker",
+  "short_name": "AST",
+  "description": "Dashboard After Sales IPE & IKE",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#17857a",
+  "theme_color": "#17857a",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}
+  ]
+}
