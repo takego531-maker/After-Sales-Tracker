@@ -9,7 +9,6 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="mobile-web-app-capable" content="yes" />
 <script>
 (function(){
   var sources = [
@@ -329,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-04-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-04-02"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -709,6 +708,18 @@ function kpiCard(label, value, delta, tone){
     <div class="kpi-label">${escapeHtml(label)}</div>
     <div class="kpi-value">${value}</div>
     ${delta ? `<div class="kpi-delta ${tone||'neutral'}">${escapeHtml(delta)}</div>` : ""}
+  </div>`;
+}
+/* Kartu Revenue vs Budget: nilai, Budget, Selisih (Actual − Budget) dan Achievement. Tanpa budget → hanya nilai. */
+function kpiBudgetCard(label, actual, budget, ach){
+  if(!budget || ach == null) return kpiCard(label, fmtRpShort(actual), "", "neutral");
+  const diff = actual - budget, good = diff >= 0, tone = good ? "good" : "bad";
+  const sign = diff < 0 ? "−" : "+";
+  return `<div class="kpi-card">
+    <div class="kpi-label">${escapeHtml(label)}</div>
+    <div class="kpi-value">${fmtRpShort(actual)}</div>
+    <div class="kpi-delta neutral" style="margin-top:6px;font-weight:500;">Budget ${escapeHtml(fmtRpShort(budget))}</div>
+    <div class="kpi-delta ${tone}" style="margin-top:2px;">Selisih ${sign}${escapeHtml(fmtRpShort(Math.abs(diff)))} · Achievement ${ach}%</div>
   </div>`;
 }
 function mtdStripHtml(items){
@@ -1578,8 +1589,8 @@ async function renderDashboard(){
     <div class="kpi-row">
       ${kpiCard("Total Revenue (Invoiced)", fmtRpShort(totalRevenue), invoices.length + " invoice", "good")}
       ${kpiCard("Total Quotation Value", fmtRpShort(totalQuoteValue), quotes.length + " quotation" + (winRate!=null?" · Win Rate "+winRate+"%":""), "neutral")}
-      ${kpiCard("Revenue MTD (" + mtdLabel + ")", fmtRpShort(revenueMtd), revenueMtdAch!=null ? "Achievement " + revenueMtdAch + "% vs Budget" : "", revenueMtdAch!=null ? (revenueMtdAch>=100?"good":"bad") : "neutral")}
-      ${kpiCard("Revenue YTD (s.d. " + mtdLabel + ")", fmtRpShort(revenueYtd), revenueYtdAch!=null ? "Achievement " + revenueYtdAch + "% vs Budget" : "", revenueYtdAch!=null ? (revenueYtdAch>=100?"good":"bad") : "neutral")}
+      ${kpiBudgetCard("Revenue MTD (" + mtdLabel + ")", revenueMtd, mtdBudget, revenueMtdAch)}
+      ${kpiBudgetCard("Revenue YTD (s.d. " + mtdLabel + ")", revenueYtd, ytdBudget, revenueYtdAch)}
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-dash-trend", "Revenue vs Budget per Bulan (Jan — " + periodLabel(periods[periods.length-1]) + ")")}
