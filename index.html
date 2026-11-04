@@ -329,7 +329,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-03-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-04-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -2825,6 +2825,46 @@ function unitStatusCategory(status){
   if(s.startsWith("UNKNOWN")) return "unknown";
   return "active";
 }
+/* Tabel unit dengan kotak pencarian (SN Unit / SN Engine / Customer / Model).
+   Pencarian menyaring SEMUA unit pada kelompoknya (bukan hanya baris yang tampil default). */
+const UNIT_SEARCH_MAX = 100;
+function unitSearchTableHtml(id, title, columns, defaultLimit){
+  const thead = columns.map(c => `<th>${escapeHtml(c)}</th>`).join("");
+  return `<div class="card-shell" id="${id}">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+      <div class="card-title" style="margin:0;">${escapeHtml(title)}</div>
+      <input type="search" id="${id}-q" placeholder="Cari SN Unit / SN Engine / Customer / Model…" autocomplete="off"
+        style="min-width:280px;max-width:100%;padding:7px 10px;border:1px solid var(--line, #d9d2c3);border-radius:8px;font:inherit;font-size:13px;background:#fff;color:inherit;" />
+    </div>
+    <div class="note-text" id="${id}-info" style="margin-bottom:6px;"></div>
+    <div class="table-scroll"><table class="ast-table"><thead><tr>${thead}</tr></thead><tbody id="${id}-body"></tbody></table></div>
+  </div>`;
+}
+function wireUnitSearch(id, items, rowFn, defaultLimit, colCount){
+  const q = document.getElementById(id + "-q"), body = document.getElementById(id + "-body"), info = document.getElementById(id + "-info");
+  if(!q || !body) return;
+  const hay = items.map(r => [r.snUnit, r.snEngine, r.customer, r.model].map(x => String(x == null ? "" : x).toLowerCase()).join(" | "));
+  const draw = () => {
+    const term = q.value.trim().toLowerCase();
+    let idx;
+    if(term){
+      const words = term.split(/\s+/).filter(Boolean);
+      idx = []; hay.forEach((h, i) => { if(words.every(w => h.indexOf(w) >= 0)) idx.push(i); });
+    }else{
+      idx = items.slice(0, defaultLimit).map((_, i) => i);
+    }
+    const total = term ? idx.length : items.length;
+    const shown = idx.slice(0, term ? UNIT_SEARCH_MAX : defaultLimit);
+    body.innerHTML = shown.length
+      ? shown.map(i => `<tr>${rowFn(items[i]).map(c => `<td>${c}</td>`).join("")}</tr>`).join("")
+      : `<tr><td colspan="${colCount}"><div class="empty-note">${term ? "Tidak ada unit yang cocok dengan pencarian." : "Belum ada data pada rentang ini."}</div></td></tr>`;
+    info.textContent = term
+      ? `Menemukan ${total.toLocaleString("id-ID")} unit` + (total > shown.length ? ` — menampilkan ${shown.length} pertama, persempit kata kunci.` : ".")
+      : `Menampilkan ${shown.length.toLocaleString("id-ID")} dari ${items.length.toLocaleString("id-ID")} unit — ketik di kotak pencarian untuk mencari di seluruh unit.`;
+  };
+  q.addEventListener("input", draw);
+  draw();
+}
 const UNIT_STATUS_BADGE = {
   active: '<span class="badge badge-up">🟢 Active</span>',
   scrap: '<span class="badge badge-stop">⚫ Scrap</span>',
@@ -2919,16 +2959,18 @@ async function renderPopulation(){
     <div class="charts-row">
       ${chartCardShell("chart-pop-year", "Tahun Pembuatan Unit", "Unit aktif saja")}
     </div>
-    ${tableHtml("Daftar Unit Aktif", ["Brand","Model","SN Unit","Branch","Customer","Last Visit (PSSR)","Last MHC (Mekanik)","Jumlah MHC"],
-      recent.map(r=>[escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), fmtDate(r.lastVisit), fmtDate(r.mhcLastDate), r.mhcCount]))}
+    ${unitSearchTableHtml("pop-active-tbl", "Daftar Unit Aktif", ["Brand","Model","SN Unit","Branch","Customer","Last Visit (PSSR)","Last MHC (Mekanik)","Jumlah MHC"], 10)}
     ${tableHtml("Unit Belum Pernah Dikunjungi PSSR (contoh)", ["Brand","Model","SN Unit","Branch","Customer","Phone"],
       notVisitedList.map(r=>[escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), escapeHtml(r.phone)]))}
     ${hasMhcData ? tableHtml("Unit Belum Pernah MHC (contoh)", ["Brand","Model","SN Unit","Branch","Customer","Phone"],
       notMhcList.map(r=>[escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), escapeHtml(r.phone)]))
       : '<div class="empty-note">Belum ada data di sheet Machine Health Check untuk dicocokkan.</div>'}
-    ${tableHtml(`Unit Tidak Aktif (Scrap/Unknown)${inactiveRows.length>30?' — 30 pertama':''}`, ["Brand","Model","SN Unit","Branch","Customer","Status","Remarks"],
-      inactiveList.map(r=>[escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), UNIT_STATUS_BADGE[r.statusCat], escapeHtml(r.remarks)]))}
+    ${unitSearchTableHtml("pop-inactive-tbl", "Unit Tidak Aktif (Scrap/Unknown)", ["Brand","Model","SN Unit","Branch","Customer","Status","Remarks"], 30)}
   `;
+  wireUnitSearch("pop-active-tbl", activeRows,
+    r => [escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), fmtDate(r.lastVisit), fmtDate(r.mhcLastDate), r.mhcCount], 10, 8);
+  wireUnitSearch("pop-inactive-tbl", inactiveRows,
+    r => [escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), UNIT_STATUS_BADGE[r.statusCat], escapeHtml(r.remarks)], 30, 7);
   const branchEntries = Object.entries(byBranch).sort((a,b)=>b[1]-a[1]);
   drawBar("chart-pop-branch", branchEntries.map(e=>e[0]), [{label:"Jumlah Unit", data:branchEntries.map(e=>e[1]), color:COLORS.green}]);
   const sectorEntries = Object.entries(bySector).sort((a,b)=>b[1]-a[1]).slice(0,8);
