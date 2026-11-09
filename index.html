@@ -328,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-09-02"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-09-03"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -463,7 +463,7 @@ function getPreviousMonthRange(){
   const to = new Date(now.getFullYear(), now.getMonth(), 0, 23,59,59); // hari terakhir bulan sebelumnya
   return { dateFrom: from, dateTo: to };
 }
-const FULL_MONTH_NAMES_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const FULL_MONTH_NAMES_ID = ["January","February","March","April","May","June","July","August","September","October","November","December"]; // nama tetap *_ID (dipakai banyak tempat); isi kini bahasa Inggris
 function filterPeriodLabel(){
   const { dateFrom, dateTo } = globalFilters;
   if(!dateFrom && !dateTo) return "All Periods";
@@ -611,7 +611,7 @@ function fmtRpShort(n){
 }
 function fmtDate(d){
   if(!(d instanceof Date) || isNaN(d)) return "-";
-  return d.toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" });
+  return String(d.getDate()).padStart(2,"0") + " " + MONTH_ORDER[d.getMonth()] + " " + d.getFullYear();
 }
 function periodKey(d){
   if(!(d instanceof Date) || isNaN(d)) return null;
@@ -719,7 +719,7 @@ function kpiBudgetCard(label, actual, budget, ach){
     <div class="kpi-label">${escapeHtml(label)}</div>
     <div class="kpi-value">${fmtRpShort(actual)}</div>
     <div class="kpi-delta neutral" style="margin-top:6px;font-weight:500;">Budget ${escapeHtml(fmtRpShort(budget))}</div>
-    <div class="kpi-delta ${tone}" style="margin-top:2px;">Selisih ${sign}${escapeHtml(fmtRpShort(Math.abs(diff)))} · Achievement ${ach}%</div>
+    <div class="kpi-delta ${tone}" style="margin-top:2px;">Variance ${sign}${escapeHtml(fmtRpShort(Math.abs(diff)))} · Achievement ${ach}%</div>
   </div>`;
 }
 function mtdStripHtml(items){
@@ -1603,7 +1603,7 @@ async function renderDashboard(){
       ${kpiCard("Total Revenue (Invoiced)", fmtRpShort(totalRevenue), invoices.length + " invoice", "good")}
       ${kpiCard("Total Quotation Value", fmtRpShort(totalQuoteValue), quotes.length + " quotation" + (winRate!=null?" · Win Rate "+winRate+"%":""), "neutral")}
       ${kpiBudgetCard("Revenue MTD (" + mtdLabel + ")", revenueMtd, mtdBudget, revenueMtdAch)}
-      ${kpiBudgetCard("Revenue YTD (s.d. " + mtdLabel + ")", revenueYtd, ytdBudget, revenueYtdAch)}
+      ${kpiBudgetCard("Revenue YTD (to " + mtdLabel + ")", revenueYtd, ytdBudget, revenueYtdAch)}
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-dash-trend", "Revenue vs Budget per Month (Jan — " + periodLabel(periods[periods.length-1]) + ")")}
@@ -3745,7 +3745,7 @@ async function renderCustomerTrend(){
         <div class="card-title">All Customers — Annual Trend</div>
         <button class="btn" id="ct-export-main" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel</button>
       </div>
-      <div class="card-subtitle">Semua kolom tahun di tabel ini dihitung dengan periode yang sama, yaitu <b>Januari–${monthLabel}</b> tiap tahunnya (mengikuti bulan berjalan sekarang) — supaya perbandingan antar tahun apple-to-apple, bukan cuma kolom terakhir. Status/panah membandingkan Jan–${monthLabel} tahun ini vs Jan–${monthLabel} tahun lalu. Selisih dalam rentang ±8% dianggap Stabil. Kolom "Growth since ${minYear}" bandingkan tahun pertama data vs sekarang, untuk gambaran besar (Status sendiri cuma lihat 2 tahun terakhir). Kolom "Avg. Parts Purchase/Unit" = Total Invoice Divisi Parts sejak ${minYear} ÷ Jumlah Unit — makin kecil dibanding Customer sejenis lain, makin besar kemungkinan spare part unitnya "bocor" ke kompetitor. "Machine Population" hanya menghitung unit berstatus <b>Active</b> di Machine Population — unit Scrap/Unknown tidak ikut dihitung supaya rata-ratanya tidak bias; kalau Customer punya unit tidak aktif, keterangannya muncul di rincian (klik baris Customer). Total 1 tahun penuh (Jan–Des) untuk tiap tahun tetap bisa dilihat dengan klik baris Customer untuk buka rincian.</div>
+      <div class="card-subtitle">Semua kolom tahun di tabel ini dihitung dengan periode yang sama, yaitu <b>January–${monthLabel}</b> tiap tahunnya (mengikuti bulan berjalan sekarang) — supaya perbandingan antar tahun apple-to-apple, bukan cuma kolom terakhir. Status/panah membandingkan Jan–${monthLabel} tahun ini vs Jan–${monthLabel} tahun lalu. Selisih dalam rentang ±8% dianggap Stabil. Kolom "Growth since ${minYear}" bandingkan tahun pertama data vs sekarang, untuk gambaran besar (Status sendiri cuma lihat 2 tahun terakhir). Kolom "Avg. Parts Purchase/Unit" = Total Invoice Divisi Parts sejak ${minYear} ÷ Jumlah Unit — makin kecil dibanding Customer sejenis lain, makin besar kemungkinan spare part unitnya "bocor" ke kompetitor. "Machine Population" hanya menghitung unit berstatus <b>Active</b> di Machine Population — unit Scrap/Unknown tidak ikut dihitung supaya rata-ratanya tidak bias; kalau Customer punya unit tidak aktif, keterangannya muncul di rincian (klik baris Customer). Total 1 tahun penuh (Jan–Des) untuk tiap tahun tetap bisa dilihat dengan klik baris Customer untuk buka rincian.</div>
       <div class="ct-filter-row">
         <div><label>Status</label>
           <select id="ct-status-filter">
@@ -3781,7 +3781,7 @@ async function renderCustomerTrend(){
           <thead><tr>
             <th>Customer</th><th style="text-align:right">Machine Population (Active)</th>
             <th style="text-align:right">Avg. Parts Purchase/Unit</th>
-            ${YEARS.map(y => `<th style="text-align:right">Invoice ${y}<br><span style="font-weight:400;font-size:9.5px;">(s.d. ${monthLabel}${y===currentYear?', YTD':''})</span></th>`).join("")}
+            ${YEARS.map(y => `<th style="text-align:right">Invoice ${y}<br><span style="font-weight:400;font-size:9.5px;">(to ${monthLabel}${y===currentYear?', YTD':''})</span></th>`).join("")}
             <th>Status</th><th style="text-align:right">Growth since ${minYear}</th><th>Auto Notes</th>
           </tr></thead>
           <tbody id="ct-main-tbody"></tbody>
@@ -3798,7 +3798,7 @@ async function renderCustomerTrend(){
         <table class="ast-table" id="ct-group-table">
           <thead><tr>
             <th>Group</th><th style="text-align:right"># Customer</th><th style="text-align:right">Machine Population (Active)</th>
-            ${YEARS.map(y => `<th style="text-align:right">Invoice ${y}<br><span style="font-weight:400;font-size:9.5px;">(s.d. ${monthLabel}${y===currentYear?', YTD':''})</span></th>`).join("")}
+            ${YEARS.map(y => `<th style="text-align:right">Invoice ${y}<br><span style="font-weight:400;font-size:9.5px;">(to ${monthLabel}${y===currentYear?', YTD':''})</span></th>`).join("")}
             <th>Status</th><th style="text-align:right">Growth since ${minYear}</th><th>Auto Notes</th>
           </tr></thead>
           <tbody id="ct-group-tbody"></tbody>
@@ -3888,7 +3888,7 @@ async function renderCustomerTrend(){
 
   function ctExportMain(){
     const headers = ["Customer", "Activity Category", "Machine Population (Active)", `Avg. Parts Purchase/Unit (since ${minYear})`,
-      ...YEARS.map(y => `Invoice ${y} (s.d. ${monthLabel})`),
+      ...YEARS.map(y => `Invoice ${y} (to ${monthLabel})`),
       "Invoice Status", "Status Quotation", `Growth since ${minYear} (%)`, "Auto Notes"];
     const rows = [headers];
     ctMainListCache.forEach(c => {
@@ -3912,7 +3912,7 @@ async function renderCustomerTrend(){
     });
     return `<div class="ct-detail-inner"><div class="ct-detail-table-wrap" style="max-width:680px;">
       <table class="ct-detail-table">
-        <thead><tr><th>Customers in This Group</th><th>Population</th><th>Invoice ${currentYear-1} (s.d. ${monthLabel})</th><th>Invoice ${currentYear} (s.d. ${monthLabel})</th><th>Status</th></tr></thead>
+        <thead><tr><th>Customers in This Group</th><th>Population</th><th>Invoice ${currentYear-1} (to ${monthLabel})</th><th>Invoice ${currentYear} (to ${monthLabel})</th><th>Status</th></tr></thead>
         <tbody>${rows}</tbody></table></div></div>`;
   }
 
@@ -3947,7 +3947,7 @@ async function renderCustomerTrend(){
 
   function ctExportGroups(){
     const headers = ["Group", "# Customer", "Machine Population (Active)",
-      ...YEARS.map(y => `Invoice ${y} (s.d. ${monthLabel})`),
+      ...YEARS.map(y => `Invoice ${y} (to ${monthLabel})`),
       "Status", `Growth since ${minYear} (%)`, "Auto Notes"];
     const rows = [headers];
     groupList.forEach(g => {
@@ -4347,7 +4347,7 @@ async function renderTopCustomer(){
   const topTotal = top.reduce((a, c) => a + c.total, 0);
   const share = grandTotal ? Math.round(topTotal / grandTotal * 100) : 0;
   const periodTxt = (globalFilters.dateFrom || globalFilters.dateTo)
-    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "awal"} s.d. ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "sekarang"}`
+    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "start"} to ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "now"}`
     : "All periods";
 
   const head = ["#", "Customer", ...TYPES, "Total"];
@@ -4707,7 +4707,7 @@ async function renderPssrPerformance(){
   const brTxt = g => [...g.branches].sort().join(", ");
   const pctTxt = g => g.ach === null ? '<span style="color:var(--ink-soft)">-</span>' : `<strong style="color:${g.ach >= 100 ? "var(--green, #2e9e5b)" : g.ach >= 80 ? "inherit" : "var(--red, #d64545)"}">${Math.round(g.ach)}%</strong>`;
   const periodTxt = (globalFilters.dateFrom || globalFilters.dateTo)
-    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "awal"} s.d. ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "sekarang"}` : "All periods";
+    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "start"} to ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "now"}` : "All periods";
 
   const head = ["#", "PSSR", "Branch", ...(showSplit ? ["Revenue IPE", "Revenue IKE"] : []), "Revenue", "Budget", "Achievement", "Variance", "# Customer", "# Invoice"];
   const line = (g, i) => `<tr${i === null ? ' style="color:var(--ink-soft)"' : ""}>
@@ -4732,7 +4732,7 @@ async function renderPssrPerformance(){
       <td style="text-align:right">${fmtRpShort(wTot.yr)}</td><td style="text-align:right">${wTot.yb ? fmtRpShort(wTot.yb) : "-"}</td><td style="text-align:right">${achCell(wTot.yb ? wTot.yr / wTot.yb * 100 : null)}</td></tr>`;
   const winHtml = winRows.length ? `<div class="card-shell">
       <div class="card-title">MTD &amp; YTD — ${escapeHtml(mtdLabel)}</div>
-      <div class="card-subtitle">MTD = bulan ${escapeHtml(mtdLabel)}; YTD = Januari s.d. ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "To" di filter; tidak ikut rentang Dari–To). Diurutkan dari Achievement YTD tertinggi. Aturan Revenue, Budget, dan penentuan PSSR sama dengan tabel di bawah. PSSR tanpa Budget tidak ditampilkan${hiddenWin.length ? " (" + hiddenWin.length + " PSSR, YTD " + fmtRpShort(hiddenWin.reduce((a, g) => a + g.ytd.rev, 0)) + " tidak masuk total)" : ""}.</div>
+      <div class="card-subtitle">MTD = bulan ${escapeHtml(mtdLabel)}; YTD = January to ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "To" di filter; tidak ikut rentang Dari–To). Diurutkan dari Achievement YTD tertinggi. Aturan Revenue, Budget, dan penentuan PSSR sama dengan tabel di bawah. PSSR tanpa Budget tidak ditampilkan${hiddenWin.length ? " (" + hiddenWin.length + " PSSR, YTD " + fmtRpShort(hiddenWin.reduce((a, g) => a + g.ytd.rev, 0)) + " tidak masuk total)" : ""}.</div>
       <div class="table-scroll"><table class="ast-table"><thead><tr><th>#</th><th>PSSR</th><th>Branch</th><th style="text-align:right">MTD Revenue</th><th style="text-align:right">MTD Budget</th><th style="text-align:right">MTD Ach.</th><th style="text-align:right">YTD Revenue</th><th style="text-align:right">YTD Budget</th><th style="text-align:right">YTD Ach.</th></tr></thead>
       <tbody>${winRows.map(winLine).join("")}${winTotLine}</tbody></table></div></div>` : "";
   const reconRows = Object.values(recon).filter(x => x.all).sort((a, z) => z.all - a.all);
@@ -4806,7 +4806,7 @@ async function renderOtherIncome(){
   const fk = globalFilters.dateFrom ? periodKey(globalFilters.dateFrom) : null;
   const tk = globalFilters.dateTo ? periodKey(globalFilters.dateTo) : null;
   const periodTxt = (globalFilters.dateFrom || globalFilters.dateTo)
-    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "awal"} s.d. ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "sekarang"}` : "All periods";
+    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "start"} to ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "now"}` : "All periods";
   const yearMonths = []; for(let m = 0; m <= refDate.getMonth(); m++) yearMonths.push(`${refDate.getFullYear()}-${String(m+1).padStart(2,"0")}`);
 
   const lines = {}; // "Sumber|Curr" -> { source, curr, per, mtd, ytd, monthly{pk} }
@@ -4916,7 +4916,7 @@ async function renderOtherIncome(){
     </div>
     <div class="card-shell">
       <div class="card-title">Summary per Source &amp; Currency</div>
-      <div class="card-subtitle">Periode filter: <b>${escapeHtml(periodTxt)}</b>. MTD = ${escapeHtml(mtdLabel)}; YTD = Januari s.d. ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "To"). Nilai ditampilkan dalam <b>mata uang asal</b> dan <b>belum dikonversi ke Rupiah</b>, sehingga tidak dijumlahkan antar mata uang.${isAdmin ? "" : " Program Rebate hanya terlihat oleh Admin."}</div>
+      <div class="card-subtitle">Periode filter: <b>${escapeHtml(periodTxt)}</b>. MTD = ${escapeHtml(mtdLabel)}; YTD = January to ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "To"). Nilai ditampilkan dalam <b>mata uang asal</b> dan <b>belum dikonversi ke Rupiah</b>, sehingga tidak dijumlahkan antar mata uang.${isAdmin ? "" : " Program Rebate hanya terlihat oleh Admin."}</div>
       ${rebateNote ? `<div class="empty-note" style="margin-bottom:8px;">${rebateNote}</div>` : ""}
       ${all.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr><th>Source</th><th>Curr</th><th style="text-align:right">Filter Period</th><th style="text-align:right">MTD</th><th style="text-align:right">YTD</th></tr></thead><tbody>${all.map(rowHtml).join("")}</tbody></table></div>` : `<div class="empty-note">Belum ada data.</div>`}
     </div>
