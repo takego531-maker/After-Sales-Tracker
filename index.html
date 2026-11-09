@@ -328,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-04-02"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-09-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -819,7 +819,20 @@ async function drawBar(id, labels, datasets, opts={}){
     type: "bar",
     data: { labels, datasets: datasets.map((d,i) => ({ label:d.label, data:d.data, backgroundColor:d.color||PIE_PALETTE[i%6], borderRadius:opts.stacked?2:5, maxBarThickness:34 })) },
     options: { responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display: datasets.length>1, labels:{ boxWidth:12, font:{size:11} } } },
+      plugins:{ legend:{ display: datasets.length>1, labels:{ boxWidth:12, font:{size:11} } },
+        // opts.pctTooltip: tooltip bar bertumpuk menampilkan nilai + persen terhadap total tumpukan (per cabang)
+        ...(opts.pctTooltip ? { tooltip:{ callbacks:{
+          label: c => {
+            const v = Number(c.parsed.y) || 0;
+            const tot = c.chart.data.datasets.reduce((a,d) => a + (Number(d.data[c.dataIndex]) || 0), 0);
+            return c.dataset.label + ": " + fmtRp(v) + (tot ? " (" + Math.round(v/tot*100) + "%)" : "");
+          },
+          footer: items => {
+            if(!items.length) return "";
+            const tot = items[0].chart.data.datasets.reduce((a,d) => a + (Number(d.data[items[0].dataIndex]) || 0), 0);
+            return "Total: " + fmtRp(tot);
+          }
+        } } } : {}) },
       scales:{ x:{ grid:{display:false}, stacked: !!opts.stacked }, y:{ grid:{color:"#e7ded0"}, stacked: !!opts.stacked } } }
   });
 }
@@ -2410,11 +2423,22 @@ async function renderInventoryProfile(){
     </div>
     ${tableHtml("Status Inventory per Cabang — " + latestLabel,
       ["Branch","Dead Stock","Slow","Medium","Fast","Total"],
-      branches.map(b => {
-        const c = branchCatValue[b];
-        const total = allCats.reduce((a,cat)=>a+c[cat],0);
-        return [escapeHtml(b), fmtRp(c["DEAD STOCK"]||0), fmtRp(c["SLOW"]||0), fmtRp(c["MEDIUM"]||0), fmtRp(c["FAST"]||0), fmtRp(total)];
-      }))}
+      (() => {
+        // Persen = nilai status ÷ total stok cabang itu (baris "Semua Cabang" = gabungan seluruh cabang)
+        const STAT = ["DEAD STOCK","SLOW","MEDIUM","FAST"];
+        const mk = (label, c) => {
+          const total = allCats.reduce((a,cat)=>a+(c[cat]||0),0);
+          return [label].concat(STAT.map(k => {
+            const v = c[k]||0;
+            return alignedCell(fmtRp(v), total ? Math.round(v/total*100)+"%" : "-", 2.4);
+          }), [fmtRp(total)]);
+        };
+        const rowsOut = branches.map(b => { const r = mk(escapeHtml(b), branchCatValue[b]); return r; });
+        const all = {}; allCats.forEach(cat => { all[cat] = branches.reduce((a,b)=>a+(branchCatValue[b][cat]||0),0); });
+        const allRow = mk("<strong>Semua Cabang</strong>", all).map((cell,i) => i===0 ? cell : "<strong>"+cell+"</strong>");
+        rowsOut.push(allRow);
+        return rowsOut;
+      })())}
     <div class="charts-row">
       ${chartCardShell("chart-profile-trend", "Tren Nilai per Kategori — per Bulan")}
     </div>
@@ -2426,7 +2450,7 @@ async function renderInventoryProfile(){
   drawPie("chart-profile-count", modelLabels, modelCounts);
   drawBar("chart-profile-branch", branches, allCats.map(cat => ({
     label: cat, data: branches.map(b => branchCatValue[b][cat]||0), color: CAT_COLORS[cat]
-  })), { stacked: true });
+  })), { stacked: true, pctTooltip: true });
   drawLine("chart-profile-trend", trendPeriods.map(periodLabel), allCats.filter(c=>trendByCat[c].some(v=>v>0)).map(cat => ({ label:cat, data:trendByCat[cat], color:CAT_COLORS[cat] })));
 }
 
