@@ -275,7 +275,7 @@
         <label>Password</label>
         <input type="password" id="login-password" autocomplete="current-password" required />
       </div>
-      <button type="submit" class="login-btn" id="login-submit">Masuk</button>
+      <button type="submit" class="login-btn" id="login-submit">Sign In</button>
     </form>
     <div class="login-hint">Data yang tampil otomatis disaring sesuai cabang akun kamu.</div>
   </div>
@@ -328,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-09-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-09-02"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -466,7 +466,7 @@ function getPreviousMonthRange(){
 const FULL_MONTH_NAMES_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 function filterPeriodLabel(){
   const { dateFrom, dateTo } = globalFilters;
-  if(!dateFrom && !dateTo) return "Semua Periode";
+  if(!dateFrom && !dateTo) return "All Periods";
   if(dateFrom && dateTo){
     const sameMonth = dateFrom.getFullYear()===dateTo.getFullYear() && dateFrom.getMonth()===dateTo.getMonth();
     const lastDayOfMonth = new Date(dateTo.getFullYear(), dateTo.getMonth()+1, 0).getDate();
@@ -499,7 +499,7 @@ function applyFilters(rows, dateField, branchField){
 }
 
 /** Jumlah hari kalender dalam rentang filter Dari–Sampai yang sedang aktif, dipakai untuk
- *  KPI "rata-rata per hari". Kalau filter tanggal sedang kosong ("Semua Periode"), fallback
+ *  KPI "average per day". Kalau filter tanggal sedang kosong ("All Periods"), fallback
  *  ke rentang tanggal aktual dari data yang ada (dari tanggal paling awal ke paling akhir).
  *  Minimal 1 hari supaya tidak pernah dibagi 0. */
 function daysInFilterRange(rows, dateField){
@@ -998,30 +998,30 @@ const MENU = [
 ];
 
 const PAGE_TITLES = {
-  "dashboard": ["After Sales Tracker", "Revenue overview — semua divisi"],
-  "settings": ["Pengaturan", "Preferensi tampilan"],
+  "dashboard": ["After Sales Tracker", "Revenue overview — all divisions"],
+  "settings": ["Settings", "Preferensi tampilan"],
   "sales.quotation": ["Quotation", "Sales pipeline"],
-  "sales.po": ["Purchase Order", "Sales Order (konfirmasi PO pelanggan)"],
-  "sales.do": ["Delivery Order", "Fulfilment & pengiriman"],
-  "sales.invoice": ["Invoice", "Billing seluruh divisi"],
-  "sales.topcustomer": ["Top Customer", "20 Customer dengan belanja terbesar pada periode terpilih"],
-  "otherIncome": ["Other Income", "Warranty Approved, Rebate Program, dan Bundling Unit — per mata uang asal"],
-  "sales.pssr": ["PSSR Performance", "Revenue Invoice per PSSR dibandingkan Budget pada periode terpilih"],
-  "sales.commodity": ["Commodity — Tyre", "Penjualan Tyre: nilai Invoice, customer, dan item terlaris (Parts Delivery)"],
+  "sales.po": ["Purchase Order", "Sales Order (customer PO confirmation)"],
+  "sales.do": ["Delivery Order", "Fulfilment & delivery"],
+  "sales.invoice": ["Invoice", "Billing — all divisions"],
+  "sales.topcustomer": ["Top Customer", "Top 20 customers by spend in the selected period"],
+  "otherIncome": ["Other Income", "Warranty Approved, Rebate Program, and Bundling Unit — by original currency"],
+  "sales.pssr": ["PSSR Performance", "Invoice revenue per PSSR vs Budget for the selected period"],
+  "sales.commodity": ["Commodity — Tyre", "Tyre sales: Invoice value, customers, and best-selling items (Parts Delivery)"],
   "parts.abcfms": ["ABC-FMS Analysist", "Klasifikasi parts"],
-  "parts.osa": ["On Shelves Availability", "Ketersediaan stok vs permintaan"],
-  "parts.stock": ["Stock Inventory", "Posisi stok & nilai"],
-  "parts.turnover": ["Inventory Turn Over", "Seberapa cepat parts berputar — target perusahaan 3x/tahun"],
-  "parts.profile": ["Inventory Profile", "Status perputaran stok — Dead/Slow/Medium/Fast"],
-  "parts.delivery": ["Parts Delivery", "Riwayat pengiriman parts ke customer"],
-  "service.warranty": ["Warranty", "Klaim garansi"],
-  "service.mhc": ["Machine Health Check", "Inspeksi preventif"],
-  "service.jobs": ["Jobs Distribution", "Distribusi pekerjaan workshop"],
-  "service.wip": ["Work In Progress", "Pekerjaan yang sedang berjalan"],
-  "service.overhaul": ["Engine & Transmission Overhaul", "Rebuild komponen besar"],
-  "population": ["Machine Population", "Populasi unit pelanggan"],
-  "customerTrend": ["Customer Trend", "Tren pembelian per customer"],
-  "customerCoverage": ["Coverage Customer", "Customer tercover per Cabang, per Bulan"],
+  "parts.osa": ["On Shelves Availability", "Stock availability vs demand"],
+  "parts.stock": ["Stock Inventory", "Stock position & value"],
+  "parts.turnover": ["Inventory Turn Over", "How fast parts turn over — company target 3x/year"],
+  "parts.profile": ["Inventory Profile", "Stock turnover status — Dead/Slow/Medium/Fast"],
+  "parts.delivery": ["Parts Delivery", "Parts delivery history to customers"],
+  "service.warranty": ["Warranty", "Warranty claims"],
+  "service.mhc": ["Machine Health Check", "Preventive inspection"],
+  "service.jobs": ["Jobs Distribution", "Workshop job distribution"],
+  "service.wip": ["Work In Progress", "Jobs in progress"],
+  "service.overhaul": ["Engine & Transmission Overhaul", "Major component rebuild"],
+  "population": ["Machine Population", "Customer unit population"],
+  "customerTrend": ["Customer Trend", "Purchase trend per customer"],
+  "customerCoverage": ["Coverage Customer", "Covered customers per branch, per month"],
 };
 
 let currentPage = "dashboard";
@@ -1051,8 +1051,8 @@ function renderSidebar(){
       html += `</div>`;
     }
   });
-  html += `<div class="lainnya-label">LAINNYA</div>
-    <div class="settings-item ${currentPage==='settings'?'selected':''}" data-key="settings"><span>⚙</span><span>Pengaturan</span></div>`;
+  html += `<div class="lainnya-label">OTHERS</div>
+    <div class="settings-item ${currentPage==='settings'?'selected':''}" data-key="settings"><span>⚙</span><span>Settings</span></div>`;
   wrap.innerHTML = html;
 
   wrap.querySelectorAll(".menu-item").forEach(el => {
@@ -1132,11 +1132,11 @@ function renderFilterBar(){
 
   let branchControlHtml;
   if(isAdmin){
-    const options = ['<option value="ALL">Semua Cabang</option>']
+    const options = ['<option value="ALL">All Branches</option>']
       .concat(BRANCH_LIST.map(b => `<option value="${b}">${b}</option>`)).join("");
     branchControlHtml = `<select id="filter-branch">${options}</select>`;
   } else {
-    branchControlHtml = `<span class="filter-badge">Cabang ${escapeHtml(session ? session.branch : "-")}</span>`;
+    branchControlHtml = `<span class="filter-badge">Branch ${escapeHtml(session ? session.branch : "-")}</span>`;
   }
 
   bar.innerHTML = `
@@ -1149,19 +1149,19 @@ function renderFilterBar(){
       </select>
     </div>
     <div class="filter-group">
-      <label>Dari</label>
+      <label>From</label>
       <input type="date" id="filter-date-from" value="${toDateInputValue(globalFilters.dateFrom)}">
     </div>
     <div class="filter-group">
-      <label>Sampai</label>
+      <label>To</label>
       <input type="date" id="filter-date-to" value="${toDateInputValue(globalFilters.dateTo)}">
     </div>
     <div class="filter-group">
-      <label>Cabang</label>
+      <label>Branch</label>
       ${branchControlHtml}
     </div>
-    <button class="filter-reset-btn" id="filter-this-month">Bulan Ini</button>
-    <button class="filter-reset-btn" id="filter-reset">Reset (Bulan Lalu)</button>
+    <button class="filter-reset-btn" id="filter-this-month">This Month</button>
+    <button class="filter-reset-btn" id="filter-reset">Reset (Last Month)</button>
   `;
   wireFilterBar(isAdmin);
 }
@@ -1303,7 +1303,7 @@ function renderSettings(){
   const current = getStoredTheme();
   pageBody.innerHTML = `
     <div class="card-shell" style="max-width:480px;">
-      <div class="card-title">Tampilan</div>
+      <div class="card-title">Display</div>
       <div class="card-subtitle">Pilih mode tampilan dashboard. Preferensi ini tersimpan di browser yang sedang kamu pakai.</div>
       <div style="display:flex;gap:10px;margin-top:14px;">
         <button id="theme-light" class="btn ${current==='light'?'btn-primary':''}" style="flex:1;justify-content:center;${current!=='light'?'background:var(--cream);color:var(--ink);border:1px solid var(--gridline);':''}">☀️ Light Mode</button>
@@ -1478,7 +1478,7 @@ async function renderDashboard(){
     let quoCust = rowsToObjects(quoS, { no:0, date:1, customer:2, branch:7 }).filter(r => r.no || r.date instanceof Date);
     applyCustomerAlias(quoCust, aliasMap);
     // Total Customer: data SEMUA cabang, filter cabang diterapkan lewat kepemilikan (Opsi A)
-    const totalCust = ctTotalCustomerKeys(quoCust, invoicesRaw, popAllCust).size; // Aktif + Berhenti Beli + Prospect
+    const totalCust = ctTotalCustomerKeys(quoCust, invoicesRaw, popAllCust).size; // Aktif + Lapsed + Prospect
     const neverVisited = popActive.filter(r=>!(r.lastVisit instanceof Date)).length;
     let neverMhc = null;
     const mhcOld2 = await loadMhcLegacy();
@@ -1569,11 +1569,11 @@ async function renderDashboard(){
     return { branch, revMtdB, budMtdB, achMtdB, revYtdB, budYtdB, achYtdB };
   }).sort((a,b)=>b.revYtdB-a.revYtdB);
 
-  // Top 10 Customer berdasarkan Revenue (periode yang sedang difilter)
+  // Top 10 Customers by Revenue (periode yang sedang difilter)
   const customerRevenue = groupSum(invoices, i=>i.customer, i=>toNum(i.value));
   const topCustomers = Object.entries(customerRevenue).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
-  // Top 10 Group Customer berdasarkan Revenue (customer digabung per Group, dari Machine Population)
+  // Top 10 Customer Groups by Revenue (customer digabung per Group, dari Machine Population)
   const groupRevenue = groupSum(invoices, i=>customerGroupMap[i.customer] || i.customer, i=>toNum(i.value));
   const topGroups = Object.entries(groupRevenue).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
@@ -1606,7 +1606,7 @@ async function renderDashboard(){
       ${kpiBudgetCard("Revenue YTD (s.d. " + mtdLabel + ")", revenueYtd, ytdBudget, revenueYtdAch)}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-dash-trend", "Revenue vs Budget per Bulan (Jan — " + periodLabel(periods[periods.length-1]) + ")")}
+      ${chartCardShell("chart-dash-trend", "Revenue vs Budget per Month (Jan — " + periodLabel(periods[periods.length-1]) + ")")}
       ${chartCardShell("chart-dash-div", "Revenue vs Budget by Type — " + filterPeriodLabel())}
     </div>
 
@@ -1618,7 +1618,7 @@ async function renderDashboard(){
         { label:"Total Delivery", value: deliveryCount!=null ? deliveryCount.toLocaleString("id-ID") : "—" },
       ])}
       ${moduleCard("📦 Parts", COLORS.gold, partsStats ? [
-        { label:"Total Nilai Stok", value: partsStats.stockValue!=null ? fmtRpShort(partsStats.stockValue) : "—" },
+        { label:"Total Stock Value", value: partsStats.stockValue!=null ? fmtRpShort(partsStats.stockValue) : "—" },
         { label:"Dead Stock Share", value: partsStats.deadShare!=null ? partsStats.deadShare+"%" : "—", tone: partsStats.deadShare>15?"bad":"good" },
         { label:"OSA Fulfillment Rate", value: partsStats.osaRate!=null ? partsStats.osaRate+"%" : "—", tone: partsStats.osaRate!=null ? (partsStats.osaRate>=85?"good":"bad") : "" },
         { label:"Inventory Turnover", value: partsStats.turnover!=null ? partsStats.turnover.toFixed(1)+"x" : "—", tone: partsStats.turnover!=null ? (partsStats.turnover>=TURNOVER_TARGET?"good":"bad") : "" },
@@ -1631,28 +1631,28 @@ async function renderDashboard(){
       ])}
       ${moduleCard("🚜 Machine Population", COLORS.green, popStats ? [
         { label:"Total Unit", value: popStats.totalUnit.toLocaleString("id-ID") },
-        { label:"Total Customer", hint:"Aktif + Berhenti Beli + Prospect", value: popStats.totalCust.toLocaleString("id-ID") },
-        { label:"Belum Pernah di MHC", value: popStats.neverMhc!=null ? popStats.neverMhc.toLocaleString("id-ID") : "—", tone: popStats.neverMhc>0?"bad":"good" },
-        { label:"Belum Dikunjungi PSSR", value: popStats.neverVisited.toLocaleString("id-ID"), tone: popStats.neverVisited>0?"bad":"good" },
+        { label:"Total Customer", hint:"Active + Lapsed + Prospect", value: popStats.totalCust.toLocaleString("id-ID") },
+        { label:"Never Had MHC", value: popStats.neverMhc!=null ? popStats.neverMhc.toLocaleString("id-ID") : "—", tone: popStats.neverMhc>0?"bad":"good" },
+        { label:"Not Visited by PSSR", value: popStats.neverVisited.toLocaleString("id-ID"), tone: popStats.neverVisited>0?"bad":"good" },
       ] : [{label:"Data belum tersedia", value:"—"}])}
     </div>
 
-    ${tableHtml("Top Cabang berdasarkan Revenue — MTD & YTD (" + mtdLabel + ")",
+    ${tableHtml("Top Branches by Revenue — MTD & YTD (" + mtdLabel + ")",
       ["Branch","Revenue MTD","Budget MTD","Achievement MTD","Revenue YTD","Budget YTD","Achievement YTD"],
       topCabangRows.map(r => [
         escapeHtml(r.branch), fmtRp(r.revMtdB), fmtRp(r.budMtdB), r.achMtdB!=null?r.achMtdB+"%":"-",
         fmtRp(r.revYtdB), fmtRp(r.budYtdB), r.achYtdB!=null?r.achYtdB+"%":"-"
       ]))}
     <div class="charts-row">
-      ${tableHtml("Top 10 Customer berdasarkan Revenue", ["Customer","Revenue"],
+      ${tableHtml("Top 10 Customers by Revenue", ["Customer","Revenue"],
         topCustomers.map(([c,v])=>[escapeHtml(c), fmtRp(v)]))}
-      ${tableHtml("Top 10 Group Customer berdasarkan Revenue", ["Group Customer","Revenue"],
+      ${tableHtml("Top 10 Customer Groups by Revenue", ["Group Customer","Revenue"],
         topGroups.map(([g,v])=>[escapeHtml(g), fmtRp(v)]))}
     </div>
     <div class="charts-row">
-      ${tableHtml("Top 10 Part Terlaris (berdasarkan Qty)", ["Item No","Deskripsi","Qty Terjual","Estimasi Nilai"],
+      ${tableHtml("Top 10 Best-Selling Parts (by Qty)", ["Item No","Description","Qty Sold","Estimated Value"],
         topParts.map(([item,desc,qty,val])=>[escapeHtml(item), escapeHtml(desc), qty.toLocaleString("id-ID"), val]))}
-      ${tableHtml("Top 10 Part Terlaris (berdasarkan Line Item)", ["Item No","Deskripsi","Jumlah Line Item"],
+      ${tableHtml("Top 10 Best-Selling Parts (by Line Item)", ["Item No","Description","Line Item Count"],
         topPartsByLine.map(([item,desc,count])=>[escapeHtml(item), escapeHtml(desc), count.toLocaleString("id-ID")]))}
     </div>
     ${!hasTypeBudget ? '<div class="empty-note">Catatan: chart "Revenue vs Budget by Type" butuh rentang tanggal Dari–Sampai terisi (bukan kosong) supaya bisa mencocokkan bulan Budget-nya.</div>' : ""}
@@ -1744,22 +1744,22 @@ async function renderQuotation(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Quotations Issued", total.toLocaleString("id-ID"), "Total nilai " + fmtRpShort(totalValue), "neutral")}
-      ${hasInvoiceData ? kpiCard("Win Rate (Sudah jadi Invoice)", winRate+"%", wonCount + " dari " + total + " won", "good")
+      ${kpiCard("Quotations Issued", total.toLocaleString("id-ID"), "Total value " + fmtRpShort(totalValue), "neutral")}
+      ${hasInvoiceData ? kpiCard("Win Rate (Converted to Invoice)", winRate+"%", wonCount + " dari " + total + " won", "good")
                         : kpiCard("Win Rate", "—", "kolom Remarks Invoice belum terisi", "neutral")}
-      ${kpiCard("Lost", lostCount.toLocaleString("id-ID"), "Closed tanpa Invoice · " + fmtRpShort(lostValue), "bad")}
-      ${kpiCard("Rata-rata Lead Time", avgLeadDays!=null ? avgLeadDays+" hari" : "—", "Quotation → Invoice", "neutral")}
-      ${kpiCard("Rata-rata Quotation/Hari", avgQuotePerDay!=null ? avgQuotePerDay.toLocaleString("id-ID",{maximumFractionDigits:1}) : "—", qDays ? qDays+" hari dalam periode ini" : "", "neutral")}
-      ${kpiCard("Rata-rata Nilai Quotation/Hari", avgQuoteValuePerDay!=null ? fmtRpShort(avgQuoteValuePerDay) : "—", qDays ? qDays+" hari dalam periode ini" : "", "neutral")}
+      ${kpiCard("Lost", lostCount.toLocaleString("id-ID"), "Closed without Invoice · " + fmtRpShort(lostValue), "bad")}
+      ${kpiCard("Average Lead Time", avgLeadDays!=null ? avgLeadDays+" hari" : "—", "Quotation → Invoice", "neutral")}
+      ${kpiCard("Avg. Quotation/Day", avgQuotePerDay!=null ? avgQuotePerDay.toLocaleString("id-ID",{maximumFractionDigits:1}) : "—", qDays ? qDays+" hari dalam periode ini" : "", "neutral")}
+      ${kpiCard("Avg. Quotation Value/Day", avgQuoteValuePerDay!=null ? fmtRpShort(avgQuoteValuePerDay) : "—", qDays ? qDays+" hari dalam periode ini" : "", "neutral")}
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-q-status", "Status Quotation" + (hasInvoiceData ? " (Won/Lost/Open)" : ""))}
-      ${chartCardShell("chart-q-trend", "Nilai Quotation per Bulan")}
+      ${chartCardShell("chart-q-trend", "Quotation Value per Month")}
     </div>
-    ${tableHtml("Resume per Cabang", ["Branch","Quotation Won","Quotation Lost","Quotation Open","Total Quotation"], qResumeRows)}
-    ${tableHtml("Quotation Terbaru", ["No","Tanggal","Customer","Branch","Nilai","Status"],
+    ${tableHtml("Summary per Branch", ["Branch","Quotation Won","Quotation Lost","Quotation Open","Total Quotation"], qResumeRows)}
+    ${tableHtml("Latest Quotations", ["No","Date","Customer","Branch","Value","Status"],
       recent.map(r=>[r.no, fmtDate(r.date), escapeHtml(r.customer), escapeHtml(r.branch), fmtRp(toNum(r.value)), escapeHtml(statusLabel(r))]))}
-    ${hasInvoiceData ? tableHtml("Quotation Mandek (Open > 60 hari, belum ada Invoice)", ["No","Tanggal","Customer","Branch","Nilai","Umur (hari)"],
+    ${hasInvoiceData ? tableHtml("Stale Quotations (Open > 60 days, no Invoice yet)", ["No","Date","Customer","Branch","Value","Age (days)"],
       stalledSorted.map(r=>[r.no, fmtDate(r.date), escapeHtml(r.customer), escapeHtml(r.branch), fmtRp(toNum(r.value)), Math.round((now-r.date)/86400000)])) : ""}
     ${!hasInvoiceData ? '<div class="empty-note">Win Rate & Lead Time akan otomatis terisi begitu kolom Remarks di Sales Invoice diisi format "Based On Sales Quotations &lt;nomor&gt;." (lihat pola yang sudah kamu buat).</div>' : ""}
   `;
@@ -1768,7 +1768,7 @@ async function renderQuotation(){
   }else{
     drawPie("chart-q-status", ["Open","Closed"], [rows.filter(r=>r.status==="Open").length, rows.filter(r=>r.status==="Closed").length]);
   }
-  drawBar("chart-q-trend", periods.map(periodLabel), [{label:"Nilai", data:periods.map(p=>byPeriod[p]||0), color:COLORS.teal}]);
+  drawBar("chart-q-trend", periods.map(periodLabel), [{label:"Value", data:periods.map(p=>byPeriod[p]||0), color:COLORS.teal}]);
 }
 
 /* ============================================================== *
@@ -1805,7 +1805,7 @@ async function renderPurchaseOrder(){
   const byPeriod = groupSum(rowsAllDates, r=>periodKey(r.date), r=>toNum(r.value));
   const periods = yearToDatePeriods();
   const recent = topN(rows, r=>r.date instanceof Date ? r.date.getTime() : 0, 8);
-  const statusLabel = r => r.invoiced ? "Sudah Invoice" : (r.status || "-");
+  const statusLabel = r => r.invoiced ? "Invoiced" : (r.status || "-");
 
   // Resume per Cabang
   const poBranches = Array.from(new Set(rows.map(r=>r.branch).filter(Boolean))).sort();
@@ -1823,25 +1823,25 @@ async function renderPurchaseOrder(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Sales Order Diterbitkan", total.toLocaleString("id-ID"), "Total nilai " + fmtRpShort(totalValue), "neutral")}
+      ${kpiCard("Sales Orders Issued", total.toLocaleString("id-ID"), "Total value " + fmtRpShort(totalValue), "neutral")}
       ${kpiCard("Open", openCount.toLocaleString("id-ID"), "masih berjalan · " + fmtRpShort(openValue), "bad")}
-      ${hasInvoiceData ? kpiCard("Sudah Terinvoice", invoicedCount.toLocaleString("id-ID"), (total?Math.round(invoicedCount/total*100):0) + "% dari total SO", "good")
-                       : kpiCard("Closed", closedCount.toLocaleString("id-ID"), (total?Math.round(closedCount/total*100):0) + "% selesai", "good")}
-      ${kpiCard("Total Close Belum Terinvoice", closedNotInvoiced.length.toLocaleString("id-ID"), fmtRpShort(closedNotInvoiced.reduce((a,r)=>a+toNum(r.value),0)), "bad")}
+      ${hasInvoiceData ? kpiCard("Invoiced", invoicedCount.toLocaleString("id-ID"), (total?Math.round(invoicedCount/total*100):0) + "% of total SO", "good")
+                       : kpiCard("Closed", closedCount.toLocaleString("id-ID"), (total?Math.round(closedCount/total*100):0) + "% completed", "good")}
+      ${kpiCard("Total Closed – Not Yet Invoiced", closedNotInvoiced.length.toLocaleString("id-ID"), fmtRpShort(closedNotInvoiced.reduce((a,r)=>a+toNum(r.value),0)), "bad")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-po-trend", "Nilai Sales Order per Bulan")}
+      ${chartCardShell("chart-po-trend", "Sales Order Value per Month")}
       ${chartCardShell("chart-po-status", "Status Order")}
     </div>
-    ${tableHtml("Resume per Cabang", ["Branch","PO/SO Open","PO/SO Sudah Terinvoice","PO/SO Close tapi Belum Terinvoice","Total PO/SO"], poResumeRows)}
-    ${tableHtml("Order Terbaru", ["No","Tanggal","Customer","Branch","Nilai","Status"],
+    ${tableHtml("Summary per Branch", ["Branch","PO/SO Open","Invoiced PO/SO","Closed PO/SO – Not Yet Invoiced","Total PO/SO"], poResumeRows)}
+    ${tableHtml("Latest Orders", ["No","Date","Customer","Branch","Value","Status"],
       recent.map(r=>[r.no, fmtDate(r.date), escapeHtml(r.customer), escapeHtml(r.branch), fmtRp(toNum(r.value)), escapeHtml(statusLabel(r))]))}
-    ${hasInvoiceData ? tableHtml("Closed tapi Belum Terinvoice", ["No","Tanggal","Customer","Branch","Nilai"],
+    ${hasInvoiceData ? tableHtml("Closed – Not Yet Invoiced", ["No","Date","Customer","Branch","Value"],
       topN(closedNotInvoiced, r=>r.date instanceof Date?r.date.getTime():0, 8).map(r=>[r.no, fmtDate(r.date), escapeHtml(r.customer), escapeHtml(r.branch), fmtRp(toNum(r.value))])) : ""}
   `;
-  drawBar("chart-po-trend", periods.map(periodLabel), [{label:"Nilai", data:periods.map(p=>byPeriod[p]||0), color:COLORS.gold}]);
+  drawBar("chart-po-trend", periods.map(periodLabel), [{label:"Value", data:periods.map(p=>byPeriod[p]||0), color:COLORS.gold}]);
   if(hasInvoiceData){
-    drawPie("chart-po-status", ["Sudah Invoice","Belum Invoice"], [invoicedCount, total-invoicedCount], [COLORS.green, COLORS.gold]);
+    drawPie("chart-po-status", ["Invoiced","Not Yet Invoiced"], [invoicedCount, total-invoicedCount], [COLORS.green, COLORS.gold]);
   }else{
     drawPie("chart-po-status", ["Open","Closed"], [openCount, closedCount]);
   }
@@ -1883,7 +1883,7 @@ async function renderDeliveryOrder(){
   const notInvoicedValue = rows.filter(r=>!r.invoiced).reduce((a,r)=>a+toNum(r.value),0);
   const byBranch = groupCount(rows, r=>r.branch);
   const recent = topN(rows, r=>r.date instanceof Date ? r.date.getTime() : 0, 8);
-  const statusLabel = r => r.invoiced ? "Sudah Invoice" : (r.status || "-");
+  const statusLabel = r => r.invoiced ? "Invoiced" : (r.status || "-");
 
   // Resume per Cabang
   const doBranches = Array.from(new Set(rows.map(r=>r.branch).filter(Boolean))).sort();
@@ -1899,26 +1899,26 @@ async function renderDeliveryOrder(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Total Delivery", total.toLocaleString("id-ID"), "Total nilai " + fmtRpShort(totalValue), "neutral")}
-      ${hasInvoiceData ? kpiCard("Sudah Terinvoice", invoicedCount.toLocaleString("id-ID"), fmtRpShort(invoicedValue) + " · " + (total?Math.round(invoicedCount/total*100):0) + "% dari total DO", "good")
-                       : kpiCard("Completed", closedCount.toLocaleString("id-ID"), (total?Math.round(closedCount/total*100):0) + "% selesai", "good")}
-      ${hasInvoiceData ? kpiCard("Belum Terinvoice", notInvoicedCount.toLocaleString("id-ID"), fmtRpShort(notInvoicedValue) + " · " + (total?Math.round(notInvoicedCount/total*100):0) + "% dari total DO", "bad")
-                       : kpiCard("Cabang Terlibat", Object.keys(byBranch).length, "cabang pengirim", "neutral")}
-      ${kpiCard("Rata-rata Nilai", fmtRpShort(total?totalValue/total:0), "per delivery", "neutral")}
+      ${kpiCard("Total Delivery", total.toLocaleString("id-ID"), "Total value " + fmtRpShort(totalValue), "neutral")}
+      ${hasInvoiceData ? kpiCard("Invoiced", invoicedCount.toLocaleString("id-ID"), fmtRpShort(invoicedValue) + " · " + (total?Math.round(invoicedCount/total*100):0) + "% of total DO", "good")
+                       : kpiCard("Completed", closedCount.toLocaleString("id-ID"), (total?Math.round(closedCount/total*100):0) + "% completed", "good")}
+      ${hasInvoiceData ? kpiCard("Not Yet Invoiced", notInvoicedCount.toLocaleString("id-ID"), fmtRpShort(notInvoicedValue) + " · " + (total?Math.round(notInvoicedCount/total*100):0) + "% of total DO", "bad")
+                       : kpiCard("Branches Involved", Object.keys(byBranch).length, "delivering branches", "neutral")}
+      ${kpiCard("Average Value", fmtRpShort(total?totalValue/total:0), "per delivery", "neutral")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-do-trend", "Volume Delivery per Bulan")}
-      ${chartCardShell("chart-do-branch", "Delivery per Cabang")}
+      ${chartCardShell("chart-do-trend", "Delivery Volume per Month")}
+      ${chartCardShell("chart-do-branch", "Delivery per Branch")}
     </div>
-    ${tableHtml("Resume per Cabang", ["Branch","DO Sudah Terinvoice","DO Belum Terinvoice","Total DO"], doResumeRows)}
-    ${tableHtml("Delivery Terbaru", ["No","Tanggal","Customer","Branch","Nilai","Status"],
+    ${tableHtml("Summary per Branch", ["Branch","Invoiced DO","Not Yet Invoiced DO","Total DO"], doResumeRows)}
+    ${tableHtml("Latest Deliveries", ["No","Date","Customer","Branch","Value","Status"],
       recent.map(r=>[r.no, fmtDate(r.date), escapeHtml(r.customer), escapeHtml(r.branch), fmtRp(toNum(r.value)), escapeHtml(statusLabel(r))]))}
-    ${hasInvoiceData ? tableHtml("Closed tapi Belum Terinvoice", ["No","Tanggal","Customer","Branch","Nilai"],
+    ${hasInvoiceData ? tableHtml("Closed – Not Yet Invoiced", ["No","Date","Customer","Branch","Value"],
       topN(closedNotInvoiced, r=>r.date instanceof Date?r.date.getTime():0, 8).map(r=>[r.no, fmtDate(r.date), escapeHtml(r.customer), escapeHtml(r.branch), fmtRp(toNum(r.value))])) : ""}
   `;
-  drawLine("chart-do-trend", periods.map(periodLabel), [{label:"Jumlah DO", data:periods.map(p=>byPeriod[p]||0), color:COLORS.teal}]);
+  drawLine("chart-do-trend", periods.map(periodLabel), [{label:"DO Count", data:periods.map(p=>byPeriod[p]||0), color:COLORS.teal}]);
   const branchEntries = Object.entries(byBranch).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  drawBar("chart-do-branch", branchEntries.map(e=>e[0]), [{label:"Jumlah", data:branchEntries.map(e=>e[1]), color:COLORS.gold}]);
+  drawBar("chart-do-branch", branchEntries.map(e=>e[0]), [{label:"Count", data:branchEntries.map(e=>e[1]), color:COLORS.gold}]);
 }
 
 /* ============================================================== *
@@ -1936,7 +1936,7 @@ async function renderInvoice(){
     r.refDelivery = extractRef(r.remarks, "Deliveries");
   });
 
-  // MTD / YTD / TTM — selalu "hari ini", tidak terpengaruh filter tanggal (tapi tetap ikut filter Cabang)
+  // MTD / YTD / TTM — selalu "today", tidak terpengaruh filter tanggal (tapi tetap ikut filter Cabang)
   const now = new Date();
   const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const ytdStart = new Date(now.getFullYear(), 0, 1);
@@ -2023,11 +2023,11 @@ async function renderInvoice(){
 
   pageBody.innerHTML = `
     ${mtdStripHtml([
-      { label:"MTD (Bulan Berjalan)", value: fmtRpShort(mtdValue) },
-      { label:"YTD (Tahun Berjalan)", value: fmtRpShort(ytdValue),
+      { label:"MTD (Current Month)", value: fmtRpShort(mtdValue) },
+      { label:"YTD (Current Year)", value: fmtRpShort(ytdValue),
         sub: ytdAchievement!=null ? "Achievement " + ytdAchievement + "% vs Budget" : null,
         subColor: ytdAchievement!=null ? (ytdAchievement>=100 ? "var(--good)" : "var(--bad)") : null },
-      { label:"TTM (12 Bulan Terakhir)", value: fmtRpShort(ttmValue) },
+      { label:"TTM (Last 12 Months)", value: fmtRpShort(ttmValue) },
     ])}
     <div class="kpi-row">
       ${kpiCard("Total Invoice — " + periodLabel, fmtRpShort(totalValue),
@@ -2035,15 +2035,15 @@ async function renderInvoice(){
           periodAchievement!=null ? (periodAchievement>=100?"good":"bad") : "good")}
       ${kpiCard("Invoice — Parts", fmtRpShort(divSplit["Parts"]||0), "", "neutral")}
       ${kpiCard("Invoice — Service", fmtRpShort(divSplit["Service"]||0), "", "neutral")}
-      ${kpiCard("Rantai Lengkap (Quo→SO→DO)", total?Math.round(fullChainCount/total*100)+"%":"0%", fullChainCount + " dari " + total + " invoice", fullChainCount/Math.max(total,1)>0.7?"good":"neutral")}
+      ${kpiCard("Full Cycle (Quo→SO→DO)", total?Math.round(fullChainCount/total*100)+"%":"0%", fullChainCount + " dari " + total + " invoice", fullChainCount/Math.max(total,1)>0.7?"good":"neutral")}
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-inv-trend", "Invoice: " + thisYear + " vs " + lastYear)}
       ${chartCardShell("chart-inv-div", "Invoice by Type")}
     </div>
-    ${tableHtml("Resume per Cabang — " + periodLabel + " (Nilai & Pencapaian vs Budget)",
+    ${tableHtml("Summary per Branch — " + periodLabel + " (Value & Achievement vs Budget)",
       ["Branch", ...RESUME_TYPES, "Total"], resumeRows)}
-    ${tableHtml("Invoice Terbaru", ["Invoice","Tanggal","Customer","Branch","Type","Nilai","Ref. Quotation","Ref. SO","Ref. DO"],
+    ${tableHtml("Latest Invoices", ["Invoice","Date","Customer","Branch","Type","Value","Ref. Quotation","Ref. SO","Ref. DO"],
       recent.map(r=>[r.invoice, fmtDate(r.date), escapeHtml(r.customer), escapeHtml(r.branch), escapeHtml(r.type), fmtRp(toNum(r.value)),
         escapeHtml(r.refQuotation||"-"), escapeHtml(r.refOrder||"-"), escapeHtml(r.refDelivery||"-")]))}
     <div class="empty-note">Catatan: sheet Sales Invoice pada export ini belum memuat kolom jatuh tempo/status bayar, sehingga KPI piutang (AR aging) belum bisa ditampilkan. Referensi Quotation/SO/DO diambil dari pola teks "Based On ..." di kolom Remarks — kalau ada invoice tanpa referensi, kemungkinan memang tidak diawali quotation resmi, atau format Remarks-nya belum sesuai pola.</div>
@@ -2088,29 +2088,29 @@ async function renderAbcFms(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Active SKUs", totalSkus.toLocaleString("id-ID"), "Total nilai " + fmtRpShort(totalValue), "neutral")}
-      ${kpiCard("Class A Value Share", totalValue?Math.round(classAValue/totalValue*100)+"%":"0%", classA.length + " SKU", "good")}
-      ${kpiCard("Perlu Segera Order", needOrder.length.toLocaleString("id-ID"), fmtRpShort(totalOrderValue) + " estimasi order", needOrder.length>0?"bad":"good")}
-      ${kpiCard("Perlu Dicek Manual", needCheck.length.toLocaleString("id-ID"), "stok kosong tapi jarang order", needCheck.length>0?"bad":"good")}
+      ${kpiCard("Active Part No", totalSkus.toLocaleString("id-ID"), "Total value " + fmtRpShort(totalValue), "neutral")}
+      ${kpiCard("Class A Value Share", totalValue?Math.round(classAValue/totalValue*100)+"%":"0%", classA.length + " Part No", "good")}
+      ${kpiCard("Order Immediately", needOrder.length.toLocaleString("id-ID"), fmtRpShort(totalOrderValue) + " estimasi order", needOrder.length>0?"bad":"good")}
+      ${kpiCard("Needs Manual Check", needCheck.length.toLocaleString("id-ID"), "zero stock but rarely ordered", needCheck.length>0?"bad":"good")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-abc-class", "Nilai per Kelas ABC", "A = Nilai Tinggi (prioritas utama) · B = Nilai Sedang · C = Nilai Rendah (banyak jenis, kontribusi kecil)")}
-      ${chartCardShell("chart-abc-fms", "Distribusi FMS", "F = Fast, sering bergerak · M = Medium · S = Slow, jarang bergerak")}
+      ${chartCardShell("chart-abc-class", "Value per ABC Class", "A = Nilai Tinggi (prioritas utama) · B = Nilai Sedang · C = Nilai Rendah (banyak jenis, kontribusi kecil)")}
+      ${chartCardShell("chart-abc-fms", "FMS Distribution", "F = Fast, sering bergerak · M = Medium · S = Slow, jarang bergerak")}
     </div>
-    ${tableHtml("🔴 Saran Order — Perlu Segera (diurutkan Class A→C, lalu nilai order)",
-      ["Part No","Deskripsi","ABC","FMS","Current Inv.","In Transit","Target Stock","Order Freq. 12 Bulan","Saran Order Qty","Estimasi Nilai"],
+    ${tableHtml("🔴 Order Suggestion — Order Immediately (sorted Class A→C, then order value)",
+      ["Part No","Description","ABC","FMS","Current Inv.","In Transit","Target Stock","Order Freq. 12 Months","Suggested Order Qty","Estimated Value"],
       topNeedOrder.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.abc), escapeHtml(r.fms),
         toNum(r.currentInventory), toNum(r.inTransit), Math.round(toNum(r.stockToCarry)), toNum(r.orderFreq), Math.round(-toNum(r.monthlyOrder)), fmtRp(toNum(r.orderValue))]))}
-    ${tableHtml("🟡 Perlu Dicek Manual (stok kosong, tapi historis jarang di-order)",
-      ["Part No","Deskripsi","ABC","FMS","Current Inv.","In Transit","Target Stock","Order Freq. 12 Bulan"],
+    ${tableHtml("🟡 Needs Manual Check (zero stock, but historically rarely ordered)",
+      ["Part No","Description","ABC","FMS","Current Inv.","In Transit","Target Stock","Order Freq. 12 Months"],
       topNeedCheck.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.abc), escapeHtml(r.fms),
         toNum(r.currentInventory), toNum(r.inTransit), Math.round(toNum(r.stockToCarry)), toNum(r.orderFreq)]))}
-    ${tableHtml("Parts Bernilai Tertinggi", ["Part No","Deskripsi","ABC","FMS","Nilai"],
+    ${tableHtml("Highest-Value Parts", ["Part No","Description","ABC","FMS","Value"],
       topN(rows, r=>toNum(r.value), 8).map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.abc), escapeHtml(r.fms), fmtRp(toNum(r.value))]))}
     <div class="empty-note">Data ini snapshot harian dari sheet Analysis (bukan real-time detik-ke-detik) — sesuai jadwal refresh otomatis jam 06:00.</div>
   `;
   const ABC_COLORS = { A: COLORS.blue, B: COLORS.green, C: COLORS.orange };
-  drawBar("chart-abc-class", ["A","B","C"], [{label:"Nilai", data:["A","B","C"].map(k=>valueByClass[k]||0), color:["A","B","C"].map(k=>ABC_COLORS[k])}]);
+  drawBar("chart-abc-class", ["A","B","C"], [{label:"Value", data:["A","B","C"].map(k=>valueByClass[k]||0), color:["A","B","C"].map(k=>ABC_COLORS[k])}]);
   const FMS_ORDER = ["F","M","S"];
   const FMS_COLORS = { F: COLORS.blue, M: COLORS.green, S: COLORS.orange };
   const fmsLabels = FMS_ORDER.filter(k => countByFms[k] !== undefined);
@@ -2138,7 +2138,7 @@ async function renderOsa(){
   const shortByWarehouse = groupSum(shortfallItems, r=>r.warehouse, r=>Math.abs(toNum(r.cek)));
   const worst = topN(rows, r=>-toNum(r.cek), 8);
 
-  // Tren Fulfillment Rate per bulan (basis jumlah SKU/baris permintaan) — Januari s.d. bulan berjalan, tidak terpengaruh filter tanggal
+  // Tren Fulfillment Rate per bulan (basis jumlah Part No/baris permintaan) — Januari s.d. bulan berjalan, tidak terpengaruh filter tanggal
   const trendPeriods = yearToDatePeriods();
   const totalReqByPeriod = trendPeriods.map(p => rowsAllDates.filter(r=>periodKey(r.date)===p).length);
   const fulfilledReqByPeriod = trendPeriods.map(p => rowsAllDates.filter(r=>periodKey(r.date)===p && toNum(r.cek)>=0).length);
@@ -2158,27 +2158,27 @@ async function renderOsa(){
   pageBody.innerHTML = `
     <div class="kpi-row">
       ${kpiCard("Fulfillment Rate", fulfillRate+"%", fulfilled + " dari " + total + " permintaan", fulfillRate>=85?"good":"bad")}
-      ${kpiCard("Item Kurang Stok", shortfallItems.length.toLocaleString("id-ID"), "dari " + total + " permintaan", "bad")}
-      ${kpiCard("Total Qty Shortfall", totalShortQty.toLocaleString("id-ID"), "unit kurang", "bad")}
-      ${kpiCard("Gudang Terlibat", Object.keys(groupCount(rows,r=>r.warehouse)).length, "", "neutral")}
+      ${kpiCard("Short Stock Items", shortfallItems.length.toLocaleString("id-ID"), "dari " + total + " permintaan", "bad")}
+      ${kpiCard("Total Qty Shortfall", totalShortQty.toLocaleString("id-ID"), "units short", "bad")}
+      ${kpiCard("Warehouses Involved", Object.keys(groupCount(rows,r=>r.warehouse)).length, "", "neutral")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-osa-trend", "Tren Fulfillment Rate per Bulan (Jumlah SKU)")}
-      ${chartCardShell("chart-osa-ordersupply", "Total Permintaan vs Terpenuhi per Bulan (Jumlah SKU)")}
+      ${chartCardShell("chart-osa-trend", "Fulfillment Rate Trend per Month (Part No Count)")}
+      ${chartCardShell("chart-osa-ordersupply", "Total Demand vs Fulfilled per Month (Part No Count)")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-osa-warehouse", "Shortfall per Gudang")}
+      ${chartCardShell("chart-osa-warehouse", "Shortfall per Warehouse")}
     </div>
-    ${tableHtml("Resume per Cabang", ["Branch","Total Permintaan (SKU)","Terpenuhi (SKU)","Fulfillment Rate %"], osaResumeRows)}
-    ${tableHtml("Item dengan Shortfall Terbesar", ["Item No","Deskripsi","Gudang","Diminta","Realisasi","Kekurangan"],
+    ${tableHtml("Summary per Branch", ["Branch","Total Demand (Part No)","Fulfilled (Part No)","Fulfillment Rate %"], osaResumeRows)}
+    ${tableHtml("Items with Largest Shortfall", ["Item No","Description","Warehouse","Requested","Fulfilled","Shortfall"],
       worst.filter(r=>toNum(r.cek)<0).map(r=>[escapeHtml(r.item), escapeHtml(r.desc), escapeHtml(r.warehouse), toNum(r.qty), toNum(r.realisasi), Math.abs(toNum(r.cek))]))}
   `;
   drawLine("chart-osa-trend", trendPeriods.map(periodLabel), [{label:"Fulfillment Rate (%)", data:rateByPeriod.map(v=>v==null?0:v), color:COLORS.teal}]);
   drawBar("chart-osa-ordersupply", trendPeriods.map(periodLabel), [
-    { label:"Total Permintaan (SKU)", data:totalReqByPeriod, color:COLORS.gold },
-    { label:"Terpenuhi (SKU)", data:fulfilledReqByPeriod, color:COLORS.teal },
+    { label:"Total Demand (Part No)", data:totalReqByPeriod, color:COLORS.gold },
+    { label:"Fulfilled (Part No)", data:fulfilledReqByPeriod, color:COLORS.teal },
   ]);
-  drawBar("chart-osa-warehouse", whEntries0.map(e=>e[0]), [{label:"Qty Kurang", data:whEntries0.map(e=>e[1]), color:COLORS.red}]);
+  drawBar("chart-osa-warehouse", whEntries0.map(e=>e[0]), [{label:"Qty Short", data:whEntries0.map(e=>e[1]), color:COLORS.red}]);
 }
 
 /* ============================================================== *
@@ -2214,20 +2214,20 @@ async function renderStock(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Total SKU di Stok", totalSkus.toLocaleString("id-ID"), "", "neutral")}
-      ${kpiCard("Total Nilai Stok", fmtRpShort(totalValue), "berdasarkan Stock Value di sheet Stock On Hand", "neutral")}
-      ${kpiCard("Cabang", Object.keys(byBranch).length, "", "neutral")}
-      ${kpiCard("SKU Tanpa Harga", withoutPrice.toLocaleString("id-ID"), "kolom Unit Price kosong di Stock On Hand", withoutPrice>0?"bad":"good")}
+      ${kpiCard("Total Part No in Stock", totalSkus.toLocaleString("id-ID"), "", "neutral")}
+      ${kpiCard("Total Stock Value", fmtRpShort(totalValue), "berdasarkan Stock Value di sheet Stock On Hand", "neutral")}
+      ${kpiCard("Branch", Object.keys(byBranch).length, "", "neutral")}
+      ${kpiCard("Part No without Price", withoutPrice.toLocaleString("id-ID"), "kolom Unit Price kosong di Stock On Hand", withoutPrice>0?"bad":"good")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-stock-branch", "Nilai Stok per Cabang")}
+      ${chartCardShell("chart-stock-branch", "Stock Value per Branch")}
     </div>
-    ${tableHtml("Resume per Cabang", ["Branch","Total SKU","Jumlah Qty","Total Nilai Stock"], stockResumeRows)}
-    ${tableHtml("Item Bernilai Tertinggi", ["Item No","Deskripsi","Cabang","Stok","Nilai"],
+    ${tableHtml("Summary per Branch", ["Branch","Total Part No","Total Qty","Total Stock Value"], stockResumeRows)}
+    ${tableHtml("Highest-Value Items", ["Item No","Description","Branch","Stock","Value"],
       topItems.map(r=>[escapeHtml(r.item), escapeHtml(r.desc), escapeHtml(r.branch), toNum(r.inStock), fmtRp(r.stockValue)]))}
   `;
   const branchEntries = Object.entries(byBranch).sort((a,b)=>b[1]-a[1]);
-  drawBar("chart-stock-branch", branchEntries.map(e=>e[0]), [{label:"Nilai", data:branchEntries.map(e=>e[1]), color:COLORS.teal}]);
+  drawBar("chart-stock-branch", branchEntries.map(e=>e[0]), [{label:"Value", data:branchEntries.map(e=>e[1]), color:COLORS.teal}]);
 }
 
 /* ============================================================== *
@@ -2313,24 +2313,24 @@ async function renderInventoryTurnover(){
   const resumeRows = turnoverByBranch.map(t => [
     escapeHtml(t.branch), fmtRp(t.movement), fmtRp(t.stock),
     t.isRepresentative ? t.turnover.toFixed(1)+"x" : "N/A (stok < "+fmtRpShort(TURNOVER_MIN_STOCK_VALUE)+")",
-    !t.isRepresentative ? "⚪ Data Tidak Representatif" : (t.turnover>=TURNOVER_TARGET ? "✅ Tercapai" : "❌ Di Bawah Target")
+    !t.isRepresentative ? "⚪ Not Representative" : (t.turnover>=TURNOVER_TARGET ? "✅ Achieved" : "❌ Below Target")
   ]);
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Inventory Turnover", overallTurnover!=null?overallTurnover.toFixed(1)+"x":"—", "Target perusahaan: "+TURNOVER_TARGET+"x/tahun", overallTurnover!=null?(overallTurnover>=TURNOVER_TARGET?"good":"bad"):"neutral")}
-      ${kpiCard("Days of Supply", daysOfSupply!=null?daysOfSupply+" hari":"—", "stok cukup untuk berapa lama", "neutral")}
-      ${kpiCard("Nilai Stok Underperform", fmtRpShort(underperformValue), underperform.length+" SKU di bawah target", underperform.length>0?"bad":"good")}
-      ${kpiCard("% Part Mencapai Target", achievedPct!=null?achievedPct+"%":"—", achievedCount+" dari "+withStock.length+" SKU (yang ada stok)", achievedPct!=null?(achievedPct>=50?"good":"bad"):"neutral")}
+      ${kpiCard("Inventory Turnover", overallTurnover!=null?overallTurnover.toFixed(1)+"x":"—", "Company target: "+TURNOVER_TARGET+"x/year", overallTurnover!=null?(overallTurnover>=TURNOVER_TARGET?"good":"bad"):"neutral")}
+      ${kpiCard("Days of Supply", daysOfSupply!=null?daysOfSupply+" hari":"—", "how long stock will last", "neutral")}
+      ${kpiCard("Underperforming Stock Value", fmtRpShort(underperformValue), underperform.length+" Part No below target", underperform.length>0?"bad":"good")}
+      ${kpiCard("% Part No Meeting Target", achievedPct!=null?achievedPct+"%":"—", achievedCount+" dari "+withStock.length+" Part No (with stock)", achievedPct!=null?(achievedPct>=50?"good":"bad"):"neutral")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-turnover-branch", "Turnover per Cabang", "Hijau = capai target "+TURNOVER_TARGET+"x, Merah = di bawah target, Abu-abu = stok < "+fmtRpShort(TURNOVER_MIN_STOCK_VALUE)+" (tidak representatif)")}
-      ${chartCardShell("chart-turnover-abc", "Turnover per Kelas ABC", "A = Nilai Tinggi (prioritas utama) · B = Nilai Sedang · C = Nilai Rendah (banyak jenis, kontribusi kecil). Class A idealnya berputar lebih cepat dari C.")}
+      ${chartCardShell("chart-turnover-branch", "Turnover per Branch", "Hijau = capai target "+TURNOVER_TARGET+"x, Merah = di bawah target, Abu-abu = stok < "+fmtRpShort(TURNOVER_MIN_STOCK_VALUE)+" (not representative)")}
+      ${chartCardShell("chart-turnover-abc", "Turnover per ABC Class", "A = Nilai Tinggi (prioritas utama) · B = Nilai Sedang · C = Nilai Rendah (banyak jenis, kontribusi kecil). Class A idealnya berputar lebih cepat dari C.")}
     </div>
-    ${tableHtml("🔴 Perlu Perhatian — Turnover Terendah (nilai stok terbesar mengendap)",
-      ["Part No","Deskripsi","Branch","ABC","Nilai Stok","Turnover"],
+    ${tableHtml("🔴 Needs Attention — Lowest Turnover (largest stock value tied up)",
+      ["Part No","Description","Branch","ABC","Stock Value","Turnover"],
       topUnderperform.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.branch), escapeHtml(r.abc), fmtRp(r.stockValue), r.turnover.toFixed(1)+"x"]))}
-    ${tableHtml("Resume per Cabang", ["Branch","Nilai Keluar (12 Bulan)","Nilai Stok","Turnover","Status"], resumeRows)}
+    ${tableHtml("Summary per Branch", ["Branch","Issued Value (12 Months)","Stock Value","Turnover","Status"], resumeRows)}
     <div class="empty-note">Catatan: Turnover di sini dihitung dari Nilai Keluar 12 bulan ÷ Nilai Stok SAAT INI (snapshot terbaru) — pendekatan ini dipakai karena histori stok bulanan baru mulai dikumpulkan. Begitu histori beberapa bulan terkumpul, perhitungan bisa ditingkatkan pakai rata-rata stok yang lebih presisi. Cabang/kelas dengan nilai stok di bawah Rp 1 Juta ditandai "N/A" karena rasionya bisa melonjak tidak wajar meski pembilangnya (nilai keluar) kecil.</div>
   `;
 
@@ -2378,12 +2378,12 @@ async function renderInventoryProfile(){
   const catOrder = allCats.filter(c => countByCategory[c] !== undefined);
   const topDead = topN(rowsLatest.filter(r=>r.category==="DEAD STOCK"), r=>toNum(r.totalValue), 8);
 
-  // Jumlah SKU per Model (top 8 + Lainnya)
+  // Jumlah Part No per Model (top 8 + Lainnya)
   const countByModel = groupCount(rowsLatest.filter(r=>r.model), r=>r.model);
   const modelEntriesSorted = Object.entries(countByModel).sort((a,b)=>b[1]-a[1]);
   const topModels = modelEntriesSorted.slice(0,8);
   const otherModelsCount = modelEntriesSorted.slice(8).reduce((a,[,v])=>a+v,0);
-  const modelLabels = topModels.map(e=>e[0]).concat(otherModelsCount>0 ? ["Lainnya"] : []);
+  const modelLabels = topModels.map(e=>e[0]).concat(otherModelsCount>0 ? ["Others"] : []);
   const modelCounts = topModels.map(e=>e[1]).concat(otherModelsCount>0 ? [otherModelsCount] : []);
 
   // Tren bulanan per kategori (memakai SEMUA periode yang ada, bukan cuma bulan terbaru)
@@ -2409,22 +2409,22 @@ async function renderInventoryProfile(){
   pageBody.innerHTML = `
     <div class="empty-note" style="margin-bottom:12px;">Menampilkan snapshot bulan terbaru: <strong>${escapeHtml(latestLabel)}</strong> (${allPeriods.length} bulan histori tersedia untuk tren di bawah).</div>
     <div class="kpi-row">
-      ${kpiCard("Total SKU", totalSkus.toLocaleString("id-ID"), latestLabel, "neutral")}
-      ${kpiCard("Total Nilai Inventory", fmtRpShort(totalValue), latestLabel, "neutral")}
-      ${kpiCard("Dead Stock", fmtRpShort(deadValue), deadCount + " SKU · " + (totalValue?Math.round(deadValue/totalValue*100):0) + "% dari total nilai", deadValue>0?"bad":"good")}
-      ${kpiCard("Fast Moving", fmtRpShort(fastValue), (totalValue?Math.round(fastValue/totalValue*100):0) + "% dari total nilai", "good")}
+      ${kpiCard("Total Part No", totalSkus.toLocaleString("id-ID"), latestLabel, "neutral")}
+      ${kpiCard("Total Inventory Value", fmtRpShort(totalValue), latestLabel, "neutral")}
+      ${kpiCard("Dead Stock", fmtRpShort(deadValue), deadCount + " Part No · " + (totalValue?Math.round(deadValue/totalValue*100):0) + "% of total value", deadValue>0?"bad":"good")}
+      ${kpiCard("Fast Moving", fmtRpShort(fastValue), (totalValue?Math.round(fastValue/totalValue*100):0) + "% of total value", "good")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-profile-value", "Nilai per Kategori — " + latestLabel)}
-      ${chartCardShell("chart-profile-count", "Jumlah SKU per Model — " + latestLabel)}
+      ${chartCardShell("chart-profile-value", "Value per Category — " + latestLabel)}
+      ${chartCardShell("chart-profile-count", "Part No Count per Model — " + latestLabel)}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-profile-branch", "Status Inventory per Cabang — " + latestLabel)}
+      ${chartCardShell("chart-profile-branch", "Inventory Status per Branch — " + latestLabel)}
     </div>
-    ${tableHtml("Status Inventory per Cabang — " + latestLabel,
+    ${tableHtml("Inventory Status per Branch — " + latestLabel,
       ["Branch","Dead Stock","Slow","Medium","Fast","Total"],
       (() => {
-        // Persen = nilai status ÷ total stok cabang itu (baris "Semua Cabang" = gabungan seluruh cabang)
+        // Persen = nilai status ÷ total stok cabang itu (baris "All Branches" = gabungan seluruh cabang)
         const STAT = ["DEAD STOCK","SLOW","MEDIUM","FAST"];
         const mk = (label, c) => {
           const total = allCats.reduce((a,cat)=>a+(c[cat]||0),0);
@@ -2435,14 +2435,14 @@ async function renderInventoryProfile(){
         };
         const rowsOut = branches.map(b => { const r = mk(escapeHtml(b), branchCatValue[b]); return r; });
         const all = {}; allCats.forEach(cat => { all[cat] = branches.reduce((a,b)=>a+(branchCatValue[b][cat]||0),0); });
-        const allRow = mk("<strong>Semua Cabang</strong>", all).map((cell,i) => i===0 ? cell : "<strong>"+cell+"</strong>");
+        const allRow = mk("<strong>All Branches</strong>", all).map((cell,i) => i===0 ? cell : "<strong>"+cell+"</strong>");
         rowsOut.push(allRow);
         return rowsOut;
       })())}
     <div class="charts-row">
-      ${chartCardShell("chart-profile-trend", "Tren Nilai per Kategori — per Bulan")}
+      ${chartCardShell("chart-profile-trend", "Value Trend per Category — per Month")}
     </div>
-    ${tableHtml("Dead Stock Bernilai Tertinggi (" + latestLabel + ")", ["Part No","Deskripsi","Branch","Stok","Nilai"],
+    ${tableHtml("Highest-Value Dead Stock (" + latestLabel + ")", ["Part No","Description","Branch","Stock","Value"],
       topDead.map(r=>[escapeHtml(r.partNo), escapeHtml(r.desc), escapeHtml(r.branch), toNum(r.inStock), fmtRp(toNum(r.totalValue))]))}
     <div class="empty-note">Catatan: KPI, chart kategori, breakdown per cabang, dan tabel Dead Stock di atas hanya untuk bulan terbaru (tidak dijumlah dari semua bulan). Filter Tanggal tidak berlaku di halaman ini — gunakan chart tren untuk melihat pergerakan antar bulan.</div>
   `;
@@ -2498,21 +2498,21 @@ async function renderPartsDelivery(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Total Delivery", totalLines.toLocaleString("id-ID"), "baris pengiriman parts", "neutral")}
-      ${kpiCard("Total Qty Terkirim", totalQty.toLocaleString("id-ID"), "", "neutral")}
-      ${kpiCard("Jumlah Customer", totalCustomers.toLocaleString("id-ID"), "", "neutral")}
-      ${kpiCard("Jumlah Cabang", totalBranches.toLocaleString("id-ID"), "", "neutral")}
-      ${kpiCard("Rata-rata Delivery/Hari", avgDeliveryPerDay!=null ? avgDeliveryPerDay.toLocaleString("id-ID",{maximumFractionDigits:1}) : "—", pdDays ? pdDays+" hari dalam periode ini" : "", "neutral")}
+      ${kpiCard("Total Delivery", totalLines.toLocaleString("id-ID"), "parts delivery lines", "neutral")}
+      ${kpiCard("Total Qty Delivered", totalQty.toLocaleString("id-ID"), "", "neutral")}
+      ${kpiCard("Customer Count", totalCustomers.toLocaleString("id-ID"), "", "neutral")}
+      ${kpiCard("Branch Count", totalBranches.toLocaleString("id-ID"), "", "neutral")}
+      ${kpiCard("Avg. Delivery/Day", avgDeliveryPerDay!=null ? avgDeliveryPerDay.toLocaleString("id-ID",{maximumFractionDigits:1}) : "—", pdDays ? pdDays+" hari dalam periode ini" : "", "neutral")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-pd-trend", "Jumlah Delivery per Bulan")}
+      ${chartCardShell("chart-pd-trend", "Delivery Count per Month")}
     </div>
-    ${tableHtml("Resume per Cabang", ["Branch","Total Delivery","Total Qty"], pdResumeRows)}
-    ${tableHtml("Item Terlaris (berdasarkan Qty)", ["Item No","Deskripsi","Total Qty"], topItems)}
-    ${tableHtml("Delivery Terbaru", ["Tanggal","Customer","Item No","Deskripsi","Qty","Branch"],
+    ${tableHtml("Summary per Branch", ["Branch","Total Delivery","Total Qty"], pdResumeRows)}
+    ${tableHtml("Best-Selling Items (by Qty)", ["Item No","Description","Total Qty"], topItems)}
+    ${tableHtml("Latest Deliveries", ["Date","Customer","Item No","Description","Qty","Branch"],
       recent.map(r=>[fmtDate(r.date), escapeHtml(r.customer), r.item, escapeHtml(r.desc), toNum(r.qty), escapeHtml(r.branch)]))}
   `;
-  drawBar("chart-pd-trend", periods.map(periodLabel), [{label:"Jumlah Delivery", data:periods.map(p=>byPeriod[p]||0), color:COLORS.teal}]);
+  drawBar("chart-pd-trend", periods.map(periodLabel), [{label:"Delivery Count", data:periods.map(p=>byPeriod[p]||0), color:COLORS.teal}]);
 }
 
 /* ============================================================== *
@@ -2588,23 +2588,23 @@ async function renderWarranty(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Klaim Warranty", total.toLocaleString("id-ID"), "", "neutral")}
+      ${kpiCard("Warranty Claims", total.toLocaleString("id-ID"), "", "neutral")}
       ${kpiCard("Total Approved", totalApproved.toLocaleString("id-ID") + (curr?" "+curr:""), "sesuai satuan asal (kolom Curr)", "good")}
       ${kpiCard("Total Claimed", totalClaimed.toLocaleString("id-ID") + (curr?" "+curr:""), "sesuai satuan asal (kolom Curr)", "neutral")}
       ${kpiCard("Approval Rate", totalClaimed?Math.round(totalApproved/totalClaimed*100)+"%":"0%", "Approved / Claimed", "good")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-war-trend", "Klaim Warranty per Bulan")}
+      ${chartCardShell("chart-war-trend", "Warranty Claims per Month")}
       ${chartCardShell("chart-war-status", "Claim Status")}
     </div>
-    ${tableHtml("Resume per Cabang", ["Branch","Total Approved","Total Claimed","Approval Rate"], warResumeRows)}
-    ${tableHtml("Klaim Terbaru", ["Serial No","Branch","Tanggal","Defective Part","Approved","Claimed","Engineer"],
+    ${tableHtml("Summary per Branch", ["Branch","Total Approved","Total Claimed","Approval Rate"], warResumeRows)}
+    ${tableHtml("Latest Claims", ["Serial No","Branch","Date","Defective Part","Approved","Claimed","Engineer"],
       recent.map(r=>[escapeHtml(r.serialNo), escapeHtml(r.branch), fmtDate(r.claimDate), escapeHtml(r.defectivePart),
         toNum(r.approvedValue).toLocaleString("id-ID")+" "+escapeHtml(r.approvedCurr),
         toNum(r.claimedValue).toLocaleString("id-ID")+" "+escapeHtml(r.claimedCurr),
         escapeHtml(r.engineer)]))}
   `;
-  drawLine("chart-war-trend", periods.map(periodLabel), [{label:"Klaim", data:periods.map(p=>byPeriod[p]||0), color:COLORS.red}]);
+  drawLine("chart-war-trend", periods.map(periodLabel), [{label:"Claims", data:periods.map(p=>byPeriod[p]||0), color:COLORS.red}]);
   drawPie("chart-war-status", Object.keys(byStatus), Object.values(byStatus));
 }
 
@@ -2649,18 +2649,18 @@ async function renderMhc(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Unit Diperiksa", total.toLocaleString("id-ID"), "", "neutral")}
+      ${kpiCard("Units Inspected", total.toLocaleString("id-ID"), "", "neutral")}
       ${kpiCard("Total Quotation", fmtRpShort(totalQuot), quotCount.toLocaleString("id-ID") + " quotation", "neutral")}
-      ${kpiCard("Total Invoice (Konversi)", fmtRpShort(totalInv), invCount.toLocaleString("id-ID") + " invoice · " + (totalQuot?Math.round(totalInv/totalQuot*100)+"% konversi":"0% konversi"), "good")}
-      ${kpiCard("Quotation Batal/Lose", lost.toLocaleString("id-ID"), "", "bad")}
+      ${kpiCard("Total Invoice (Conversion)", fmtRpShort(totalInv), invCount.toLocaleString("id-ID") + " invoice · " + (totalQuot?Math.round(totalInv/totalQuot*100)+"% konversi":"0% konversi"), "good")}
+      ${kpiCard("Cancelled/Lost Quotations", lost.toLocaleString("id-ID"), "", "bad")}
     </div>
     ${legacyCount ? `<div class="card-subtitle" style="margin:-4px 0 10px;">Riwayat MHC sebelum aplikasi input baru ikut dihitung dari tab "Machine Health Check (Lama)" (${legacyCount.toLocaleString("id-ID")} baris). Data baru dibaca dari tab Machine Health Check.</div>` : ""}
     <div class="charts-row">
-      ${chartCardShell("chart-mhc-trend", "Jumlah MHC per Bulan")}
+      ${chartCardShell("chart-mhc-trend", "MHC Count per Month")}
       ${chartCardShell("chart-mhc-value", "Quotation vs Invoice")}
     </div>
-    ${tableHtml("Resume per Cabang", ["Branch","Total MHC/Unit","Total Quotation","Total Invoice","Convertion Rate","Effectifness Rate"], mhcResumeRows)}
-    ${tableHtml("Quotation yang Batal (Lose)", ["Branch","Customer","Brand/Model","Tanggal","Alasan"],
+    ${tableHtml("Summary per Branch", ["Branch","Total MHC/Unit","Total Quotation","Total Invoice","Convertion Rate","Effectifness Rate"], mhcResumeRows)}
+    ${tableHtml("Cancelled (Lost) Quotations", ["Branch","Customer","Brand/Model","Date","Reason"],
       recentLost.map(r=>[escapeHtml(r.branch), escapeHtml(r.customer), escapeHtml(r.brand)+" "+escapeHtml(r.model), fmtDate(r.date), escapeHtml(r.reasonForLose)]))}
   `;
   drawLine("chart-mhc-trend", periods.map(periodLabel), [{label:"Unit", data:periods.map(p=>byPeriod[p]||0), color:COLORS.teal}]);
@@ -2703,36 +2703,36 @@ async function renderJobs(){
   pageBody.innerHTML = `
     <div class="kpi-row">
       ${kpiCard("Total Service Call", total.toLocaleString("id-ID"), "", "neutral")}
-      ${kpiCard("Kategori Terbanyak", topProblem?topProblem[0]:"-", topProblem?topProblem[1]+" kasus":"", "neutral")}
-      ${kpiCard("Teknisi Tercatat", Object.keys(byTechnician).length, "", "neutral")}
-      ${kpiCard("Redo Rate", total?Math.round(redoCount/total*100)+"%":"0%", redoCount + " kasus redo", redoCount>0?"bad":"good")}
+      ${kpiCard("Top Category", topProblem?topProblem[0]:"-", topProblem?topProblem[1]+" cases":"", "neutral")}
+      ${kpiCard("Technicians Recorded", Object.keys(byTechnician).length, "", "neutral")}
+      ${kpiCard("Redo Rate", total?Math.round(redoCount/total*100)+"%":"0%", redoCount + " redo cases", redoCount>0?"bad":"good")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-jobs-problem", "Distribusi Problem Type")}
-      ${chartCardShell("chart-jobs-type", "Distribusi Type (Warranty/Support/Revenue/Policy/Redo)")}
+      ${chartCardShell("chart-jobs-problem", "Problem Type Distribution")}
+      ${chartCardShell("chart-jobs-type", "Type Distribution (Warranty/Support/Revenue/Policy/Redo)")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-jobs-tech", "Beban Kerja per Teknisi (Top 8)")}
+      ${chartCardShell("chart-jobs-tech", "Workload per Technician (Top 8)")}
     </div>
-    ${tableHtml("Resume per Cabang — Distribusi Type (Jumlah & Nilai)", ["Branch", ...jobTypes, "Total"], jobsResumeRows)}
-    ${tableHtml("Distribusi per Problem Type", ["Problem Type","Jumlah"], problemEntries.map(([k,v])=>[escapeHtml(k), v]))}
+    ${tableHtml("Summary per Branch — Type Distribution (Count & Value)", ["Branch", ...jobTypes, "Total"], jobsResumeRows)}
+    ${tableHtml("Distribution per Problem Type", ["Problem Type","Count"], problemEntries.map(([k,v])=>[escapeHtml(k), v]))}
   `;
   drawPie("chart-jobs-problem", problemEntries.map(e=>e[0]), problemEntries.map(e=>e[1]));
   drawPie("chart-jobs-type", typeEntries.map(e=>e[0]), typeEntries.map(e=>e[1]));
-  drawBar("chart-jobs-tech", techEntries.map(e=>e[0]), [{label:"Jumlah Kasus", data:techEntries.map(e=>e[1]), color:COLORS.blue}]);
+  drawBar("chart-jobs-tech", techEntries.map(e=>e[0]), [{label:"Case Count", data:techEntries.map(e=>e[1]), color:COLORS.blue}]);
 }
 
 /* ============================================================== *
  *  SERVICE > WORK IN PROGRESS                                      *
  * ============================================================== */
 function agingBucketLabel(days){
-  if(days < 30) return "Aging < 30 Hari";
-  if(days < 60) return "Aging 30 - 60 Hari";
-  if(days < 90) return "Aging 60 - 90 Hari";
-  if(days < 120) return "Aging 90 - 120 Hari";
-  return "Aging > 120 hari";
+  if(days < 30) return "Aging < 30 Days";
+  if(days < 60) return "Aging 30 - 60 Days";
+  if(days < 90) return "Aging 60 - 90 Days";
+  if(days < 120) return "Aging 90 - 120 Days";
+  return "Aging > 120 Days";
 }
-const AGING_BUCKETS = ["Aging < 30 Hari","Aging 30 - 60 Hari","Aging 60 - 90 Hari","Aging 90 - 120 Hari","Aging > 120 hari"];
+const AGING_BUCKETS = ["Aging < 30 Days","Aging 30 - 60 Days","Aging 60 - 90 Days","Aging 90 - 120 Days","Aging > 120 Days"];
 
 async function renderWip(){
   const rawRows = await loadServiceCallRowsRaw();
@@ -2748,7 +2748,7 @@ async function renderWip(){
 
   const total = rows.length;
   const totalValue = rows.reduce((a,r)=>a+r.totalValue,0);
-  const byStatusAll = groupCount(allDates, r=>r.status || "Tidak diketahui");
+  const byStatusAll = groupCount(allDates, r=>r.status || "Unknown");
   const recent = topN(rows, r=>r.agingDays!=null?r.agingDays:-1, 10);
 
   // Summary per Cabang: jumlah & nilai per bucket aging
@@ -2766,17 +2766,17 @@ async function renderWip(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Pekerjaan Berjalan", total.toLocaleString("id-ID"), "dari total " + allDates.length + " service call", "bad")}
-      ${kpiCard("Nilai WIP", fmtRpShort(totalValue), "labour + parts", "neutral")}
-      ${kpiCard("Aging > 90 Hari", rowsWithAging.filter(r=>r.agingDays>=90).length.toLocaleString("id-ID"), "perlu perhatian khusus", "bad")}
-      ${kpiCard("Cabang Terlibat", wipBranches.length, "", "neutral")}
+      ${kpiCard("Jobs in Progress", total.toLocaleString("id-ID"), "dari total " + allDates.length + " service call", "bad")}
+      ${kpiCard("WIP Value", fmtRpShort(totalValue), "labour + parts", "neutral")}
+      ${kpiCard("Aging > 90 Days", rowsWithAging.filter(r=>r.agingDays>=90).length.toLocaleString("id-ID"), "needs special attention", "bad")}
+      ${kpiCard("Branches Involved", wipBranches.length, "", "neutral")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-wip-status", "Sebaran Status (Open/Close/Cancel)")}
+      ${chartCardShell("chart-wip-status", "Status Breakdown (Open/Close/Cancel)")}
     </div>
-    ${tableHtml("Summary Work In Progress (Jumlah Pekerjaan per Aging)", ["Branch", ...AGING_BUCKETS], countSummaryRows)}
-    ${tableHtml("Value Work In Progress (Nilai per Aging)", ["Branch", ...AGING_BUCKETS.map(b=>b.replace("Aging","Value"))], valueSummaryRows)}
-    ${tableHtml("Daftar Pekerjaan Berjalan (Aging Tertinggi)", ["Job Reg No","Customer","Branch","Problem","Teknisi","Status","Aging (Hari)","Nilai"],
+    ${tableHtml("Work In Progress Summary (Job Count per Aging)", ["Branch", ...AGING_BUCKETS], countSummaryRows)}
+    ${tableHtml("Work In Progress Value (Value per Aging)", ["Branch", ...AGING_BUCKETS.map(b=>b.replace("Aging","Value"))], valueSummaryRows)}
+    ${tableHtml("In-Progress Job List (Highest Aging)", ["Job Reg No","Customer","Branch","Problem","Technician","Status","Aging (Days)","Value"],
       recent.map(r=>[escapeHtml(r.jobRegNo), escapeHtml(r.customer), escapeHtml(r.branch), escapeHtml(r.problemType), escapeHtml(r.technician), escapeHtml(r.status), r.agingDays!=null?r.agingDays:"-", fmtRp(r.totalValue)]))}
   `;
   drawPie("chart-wip-status", Object.keys(byStatusAll), Object.values(byStatusAll));
@@ -2830,15 +2830,15 @@ async function renderOverhaul(){
       ${kpiCard("Total Overhaul Job", total.toLocaleString("id-ID"), "", "neutral")}
       ${kpiCard("Engine / Transmission", engineCount+" / "+transCount, "", "neutral")}
       ${kpiCard("Work In Progress", wipCount.toLocaleString("id-ID"), "", wipCount>0?"bad":"good")}
-      ${kpiCard("Nilai Terinvoice", fmtRpShort(invoicedValue), "dari total "+fmtRpShort(totalValue), "good")}
+      ${kpiCard("Invoiced Value", fmtRpShort(invoicedValue), "dari total "+fmtRpShort(totalValue), "good")}
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-oh-type", "Engine vs Transmission")}
-      ${chartCardShell("chart-oh-status", "Status Pekerjaan")}
+      ${chartCardShell("chart-oh-status", "Job Status")}
     </div>
-    ${tableHtml("Resume per Cabang — berdasarkan Status Pekerjaan", ["Branch", ...ohStatuses, "Total"], ohResumeRows)}
-    ${tableHtml("Resume per Cabang — berdasarkan Engine vs Transmission", ["Branch","Engine","Transmission","Total"], ohTypeResumeRows)}
-    ${tableHtml("Job Overhaul Terbaru", ["Customer","Branch","Tipe","Model","Tanggal","Status","Nilai"],
+    ${tableHtml("Summary per Branch — by Job Status", ["Branch", ...ohStatuses, "Total"], ohResumeRows)}
+    ${tableHtml("Summary per Branch — by Engine vs Transmission", ["Branch","Engine","Transmission","Total"], ohTypeResumeRows)}
+    ${tableHtml("Latest Overhaul Jobs", ["Customer","Branch","Type","Model","Date","Status","Value"],
       recent.map(r=>[escapeHtml(r.customer), escapeHtml(r.branch), escapeHtml(r.type), escapeHtml(r.model), fmtDate(r.date), escapeHtml(r.status), fmtRp(r.totalValue)]))}
   `;
   drawPie("chart-oh-type", ["Engine","Transmission"], [engineCount, transCount]);
@@ -2963,7 +2963,7 @@ async function renderPopulation(){
   }catch(e){ /* tanpa data transaksi, Total Customer cuma dari unit aktif */ }
   applyCustomerAlias(quoCust, aliasMapPop);
   applyCustomerAlias(invCust, aliasMapPop);
-  const totalCustomer = ctTotalCustomerKeys(quoCust, invCust, rowsAllBranch).size; // Aktif + Berhenti Beli + Prospect
+  const totalCustomer = ctTotalCustomerKeys(quoCust, invCust, rowsAllBranch).size; // Aktif + Lapsed + Prospect
   const livelinkAvailable = activeRows.filter(r => String(r.livelinkStatus).toUpperCase() === "AVAILABLE").length;
   const neverVisited = activeRows.filter(r => !(r.lastVisit instanceof Date)).length;
   const neverMhc = activeRows.filter(r => r.mhcCount === 0).length;
@@ -2980,37 +2980,37 @@ async function renderPopulation(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Total Unit Tercatat (Aktif)", total.toLocaleString("id-ID"), "", "neutral")}
-      ${kpiCard("Total Customer", totalCustomer.toLocaleString("id-ID"), "Aktif + Berhenti Beli + Prospect", "neutral")}
-      ${kpiCard("Unit Tidak Aktif", inactiveRows.length.toLocaleString("id-ID"), inactiveRows.length ? `${scrapCount} Scrap · ${unknownCount} Unknown` : "", inactiveRows.length>0?"neutral":"good")}
-      ${kpiCard("Belum Pernah Dikunjungi PSSR", neverVisited.toLocaleString("id-ID"), total?Math.round(neverVisited/total*100)+"% dari unit aktif":"", neverVisited>0?"bad":"good")}
-      ${hasMhcData ? kpiCard("Belum Pernah MHC", neverMhc.toLocaleString("id-ID"), total?Math.round(neverMhc/total*100)+"% dari unit aktif":"", neverMhc>0?"bad":"good")
-                   : kpiCard("Livelink Available", livelinkAvailable.toLocaleString("id-ID"), total?Math.round(livelinkAvailable/total*100)+"% dari unit aktif":"", "good")}
+      ${kpiCard("Total Units Recorded (Active)", total.toLocaleString("id-ID"), "", "neutral")}
+      ${kpiCard("Total Customer", totalCustomer.toLocaleString("id-ID"), "Active + Lapsed + Prospect", "neutral")}
+      ${kpiCard("Inactive Units", inactiveRows.length.toLocaleString("id-ID"), inactiveRows.length ? `${scrapCount} Scrap · ${unknownCount} Unknown` : "", inactiveRows.length>0?"neutral":"good")}
+      ${kpiCard("Never Visited by PSSR", neverVisited.toLocaleString("id-ID"), total?Math.round(neverVisited/total*100)+"% of active units":"", neverVisited>0?"bad":"good")}
+      ${hasMhcData ? kpiCard("No MHC Yet", neverMhc.toLocaleString("id-ID"), total?Math.round(neverMhc/total*100)+"% of active units":"", neverMhc>0?"bad":"good")
+                   : kpiCard("Livelink Available", livelinkAvailable.toLocaleString("id-ID"), total?Math.round(livelinkAvailable/total*100)+"% of active units":"", "good")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-pop-branch", "Populasi per Cabang", "Unit aktif saja")}
-      ${chartCardShell("chart-pop-sector", "Distribusi Sektor", "Unit aktif saja")}
+      ${chartCardShell("chart-pop-branch", "Population per Branch", "Active units only")}
+      ${chartCardShell("chart-pop-sector", "Sector Distribution", "Active units only")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-pop-year", "Tahun Pembuatan Unit", "Unit aktif saja")}
+      ${chartCardShell("chart-pop-year", "Year of Manufacture", "Active units only")}
     </div>
-    ${unitSearchTableHtml("pop-active-tbl", "Daftar Unit Aktif", ["Brand","Model","SN Unit","Branch","Customer","Last Visit (PSSR)","Last MHC (Mekanik)","Jumlah MHC"], 10)}
-    ${tableHtml("Unit Belum Pernah Dikunjungi PSSR (contoh)", ["Brand","Model","SN Unit","Branch","Customer","Phone"],
+    ${unitSearchTableHtml("pop-active-tbl", "Active Units List", ["Brand","Model","SN Unit","Branch","Customer","Last Visit (PSSR)","Last MHC (Mechanic)","MHC Count"], 10)}
+    ${tableHtml("Units Never Visited by PSSR (sample)", ["Brand","Model","SN Unit","Branch","Customer","Phone"],
       notVisitedList.map(r=>[escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), escapeHtml(r.phone)]))}
-    ${hasMhcData ? tableHtml("Unit Belum Pernah MHC (contoh)", ["Brand","Model","SN Unit","Branch","Customer","Phone"],
+    ${hasMhcData ? tableHtml("Units with No MHC Yet (sample)", ["Brand","Model","SN Unit","Branch","Customer","Phone"],
       notMhcList.map(r=>[escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), escapeHtml(r.phone)]))
       : '<div class="empty-note">Belum ada data di sheet Machine Health Check untuk dicocokkan.</div>'}
-    ${unitSearchTableHtml("pop-inactive-tbl", "Unit Tidak Aktif (Scrap/Unknown)", ["Brand","Model","SN Unit","Branch","Customer","Status","Remarks"], 30)}
+    ${unitSearchTableHtml("pop-inactive-tbl", "Inactive Units (Scrap/Unknown)", ["Brand","Model","SN Unit","Branch","Customer","Status","Remarks"], 30)}
   `;
   wireUnitSearch("pop-active-tbl", activeRows,
     r => [escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), fmtDate(r.lastVisit), fmtDate(r.mhcLastDate), r.mhcCount], 10, 8);
   wireUnitSearch("pop-inactive-tbl", inactiveRows,
     r => [escapeHtml(r.brand), escapeHtml(r.model), escapeHtml(r.snUnit), escapeHtml(r.branch), escapeHtml(r.customer), UNIT_STATUS_BADGE[r.statusCat], escapeHtml(r.remarks)], 30, 7);
   const branchEntries = Object.entries(byBranch).sort((a,b)=>b[1]-a[1]);
-  drawBar("chart-pop-branch", branchEntries.map(e=>e[0]), [{label:"Jumlah Unit", data:branchEntries.map(e=>e[1]), color:COLORS.green}]);
+  drawBar("chart-pop-branch", branchEntries.map(e=>e[0]), [{label:"Unit Count", data:branchEntries.map(e=>e[1]), color:COLORS.green}]);
   const sectorEntries = Object.entries(bySector).sort((a,b)=>b[1]-a[1]).slice(0,8);
   drawPie("chart-pop-sector", sectorEntries.map(e=>e[0]), sectorEntries.map(e=>e[1]));
-  drawBar("chart-pop-year", yearEntries.map(e=>e[0]), [{label:"Jumlah Unit", data:yearEntries.map(e=>e[1]), color:COLORS.blue}]);
+  drawBar("chart-pop-year", yearEntries.map(e=>e[0]), [{label:"Unit Count", data:yearEntries.map(e=>e[1]), color:COLORS.blue}]);
 }
 
 /* ============================================================== *
@@ -3181,7 +3181,7 @@ const CT_STABLE_BAND = 0.08;
    dari perbandingan periode-yang-sama (lihat ctSumToDate di atas). */
 function ctClassify(hadEarlier, thisYTD, lastYTD){
   // Tidak pernah ada transaksi sama sekali sejak awal data — beda dari
-  // "Berhenti Beli" (yang pernah ada transaksi lalu berhenti), ini butuh
+  // "Lapsed" (yang pernah ada transaksi lalu berhenti), ini butuh
   // perhatian tersendiri jadi jangan ikut dianggap "Stabil".
   if(thisYTD === 0 && lastYTD === 0 && !hadEarlier) return "none";
   // Sekarang nihil, padahal pernah ada transaksi (tahun lalu atau lebih awal)
@@ -3195,10 +3195,10 @@ function ctClassify(hadEarlier, thisYTD, lastYTD){
   return pct > 0 ? "up" : "down";
 }
 
-/* Total Customer (definisi baru, hasil diskusi 2026-10-05) = Aktif + Berhenti Beli + Prospect =
+/* Total Customer (definisi baru, hasil diskusi 2026-10-05) = Aktif + Lapsed + Prospect =
    Customer yang (a) punya minimal 1 unit AKTIF di Machine Population, ATAU (b) masih transaksi
    tahun ini (Quotation/Invoice, s.d. hari ini). Customer yang sudah berhenti beli DAN tidak
-   punya unit aktif ("Tidak Aktif") tidak dihitung. Parameter = SEMUA baris (belum difilter
+   punya unit aktif ("Inactive") tidak dihitung. Parameter = SEMUA baris (belum difilter
    cabang); filter cabang diterapkan di dalam lewat kepemilikan cabang (Opsi A). Dipakai di Dashboard Home & Machine
    Population supaya angkanya sama dengan Customer Trend. Semua input harus sudah melewati
    applyCustomerAlias & filter cabang oleh pemanggil. */
@@ -3231,19 +3231,19 @@ function ctActivityCategory(hasTxYTD, hasTxEver, activeUnits){
   // (hasil review 2026-10-05: 580 vs 568).
   if(!hasTxEver) return "prospect";
   if(hasTxYTD) return "active";
-  // Sudah berhenti transaksi: "churned" (Berhenti Beli) kalau MASIH punya unit aktif (masih bisa
+  // Sudah berhenti transaksi: "churned" (Lapsed) kalau MASIH punya unit aktif (masih bisa
   // di-follow up), "inactive" (Tidak Aktif) kalau tidak punya unit aktif sama sekali — unit
   // Scrap/Unknown semua, atau memang tidak ada di Machine Population (hasil diskusi 2026-10-05).
   // "inactive" TIDAK dihitung di Total Customer.
   return activeUnits > 0 ? "churned" : "inactive";
 }
 const CT_ACTIVITY_BADGE = {
-  active:   '<span class="badge badge-up">✅ Aktif</span>',
-  churned:  '<span class="badge badge-down">🛑 Berhenti Beli</span>',
-  inactive: '<span class="badge badge-stop">💤 Tidak Aktif</span>',
+  active:   '<span class="badge badge-up">✅ Active</span>',
+  churned:  '<span class="badge badge-down">🛑 Lapsed</span>',
+  inactive: '<span class="badge badge-stop">💤 Inactive</span>',
   prospect: '<span class="badge badge-none">🎯 Prospect</span>',
 };
-const CT_ACTIVITY_LABEL = { active: "Aktif (Masih Transaksi)", churned: "Berhenti Beli (Masih Punya Unit Aktif)", inactive: "Tidak Aktif (Berhenti & Tanpa Unit Aktif)", prospect: "Prospect (Belum Pernah Beli)" };
+const CT_ACTIVITY_LABEL = { active: "Active (Still Transacting)", churned: "Lapsed (Still Has Active Units)", inactive: "Inactive (Lapsed & No Active Units)", prospect: "Prospect (Never Purchased)" };
 
 /* Tren jangka panjang: hitung berapa tahun BERTURUT-TURUT nilainya
    turun/naik, mundur dari tahun terbaru ke belakang (mis. 2023→2024→
@@ -3267,26 +3267,26 @@ function ctLongTermTrend(yearMap, years){
 }
 
 const CT_STATUS_BADGE = {
-  up:     '<span class="badge badge-up">📈 Naik</span>',
-  down:   '<span class="badge badge-down">📉 Turun</span>',
-  stable: '<span class="badge badge-stable">🟨 Stabil</span>',
-  stop:   '<span class="badge badge-stop">⏹️ Invoice Berhenti</span>',
-  new:    '<span class="badge badge-new">🆕 Baru</span>',
-  none:   '<span class="badge badge-none">⚠️ Belum Pernah Beli</span>',
+  up:     '<span class="badge badge-up">📈 Up</span>',
+  down:   '<span class="badge badge-down">📉 Down</span>',
+  stable: '<span class="badge badge-stable">🟨 Stable</span>',
+  stop:   '<span class="badge badge-stop">⏹️ Invoice Stopped</span>',
+  new:    '<span class="badge badge-new">🆕 New</span>',
+  none:   '<span class="badge badge-none">⚠️ Never Purchased</span>',
 };
 const CT_QUO_BADGE_SM = {
-  up:     '<span class="badge badge-up badge-sm">📈 Quotation Naik</span>',
-  down:   '<span class="badge badge-down badge-sm">📉 Quotation Turun</span>',
-  stable: '<span class="badge badge-stable badge-sm">🟨 Quotation Stabil</span>',
-  stop:   '<span class="badge badge-stop badge-sm">⚫ Tanpa Quotation</span>',
-  new:    '<span class="badge badge-new badge-sm">🆕 Quotation Baru</span>',
-  none:   '<span class="badge badge-none badge-sm">⚠️ Belum Pernah Quotation</span>',
+  up:     '<span class="badge badge-up badge-sm">📈 Quotation Up</span>',
+  down:   '<span class="badge badge-down badge-sm">📉 Quotation Down</span>',
+  stable: '<span class="badge badge-stable badge-sm">🟨 Quotation Stable</span>',
+  stop:   '<span class="badge badge-stop badge-sm">⚫ No Quotation</span>',
+  new:    '<span class="badge badge-new badge-sm">🆕 New Quotation</span>',
+  none:   '<span class="badge badge-none badge-sm">⚠️ Never Quoted</span>',
 };
 const CT_STATUS_TEXT = {
-  up: "Naik", down: "Turun", stable: "Stabil", stop: "Invoice Berhenti", new: "Baru", none: "Belum Pernah Beli",
+  up: "Up", down: "Down", stable: "Stable", stop: "Invoice Stopped", new: "New", none: "Never Purchased",
 };
 
-/* Growth sejak tahun pertama data tersedia (basis Jan-bulan berjalan, konsisten
+/* Growth since tahun pertama data tersedia (basis Jan-bulan berjalan, konsisten
    dengan kolom tahun lainnya) — pelengkap Status (yang cuma lihat 2 tahun terakhir),
    supaya kelihatan gambaran besar sejak awal tracking. */
 function ctGrowthSince(yearMap, years){
@@ -3427,7 +3427,7 @@ async function renderCustomerTrend(){
   // population = jumlah unit AKTIF saja (dipakai utk Rata-rata Beli Parts/Unit, supaya tidak
   // bias dibagi unit yang sudah Scrap/Unknown). Unit tidak aktif tetap dicatat terpisah
   // (populationInactive + inactiveUnits) supaya kelihatan di catatan/detail Customer kenapa dia
-  // "Berhenti Beli" — kemungkinan karena unitnya sudah tidak ada, bukan semata churn.
+  // "Lapsed" — kemungkinan karena unitnya sudah tidak ada, bukan semata churn.
   const popByKey = {};
   popRows.forEach(r => {
     const key = normalizeCustomerKey(r.customer);
@@ -3512,7 +3512,7 @@ async function renderCustomerTrend(){
 
   // Customer yang punya mesin AKTIF (Machine Population) tapi belum pernah Quotation/Invoice
   // sejak awal data (${minYear}) tetap dimasukkan ke tabel — statusnya nanti otomatis
-  // "⚠️ Belum Pernah Beli" (Prospect) — supaya "Total Customer" mencerminkan semua Customer
+  // "⚠️ Never Purchased" (Prospect) — supaya "Total Customer" mencerminkan semua Customer
   // yang diketahui (Quotation + Invoice + Machine Population AKTIF), bukan cuma yang pernah
   // transaksi. Customer yang population-nya cuma Scrap/Unknown (tidak ada unit aktif sama
   // sekali) DAN tidak pernah transaksi TIDAK dimasukkan — bukan Customer aktual lagi, jangan
@@ -3536,7 +3536,7 @@ async function renderCustomerTrend(){
     c.population = pop ? pop.population : 0;
     c.populationInactive = pop ? pop.populationInactive : 0;
     c.inactiveUnits = pop ? pop.inactiveUnits : [];
-    c.group = (pop && pop.group) ? pop.group : "(Tanpa Group)";
+    c.group = (pop && pop.group) ? pop.group : "(No Group)";
 
     // Basis "s.d. bulan berjalan" (Jan-${monthLabel}) diterapkan SAMA RATA ke semua tahun
     // (bukan cuma tahun terakhir) supaya semua kolom di tabel apple-to-apple satu sama lain.
@@ -3632,7 +3632,7 @@ async function renderCustomerTrend(){
       </div>
       ${b.withoutPop.length
         ? `<div class="ct-detail-table-wrap" style="max-width:600px;max-height:300px;overflow:auto;">
-            <table class="ct-detail-table"><thead><tr><th>Customer (tidak match Machine Population)</th><th>Sumber</th></tr></thead>
+            <table class="ct-detail-table"><thead><tr><th>Customers (not matched to Machine Population)</th><th>Source</th></tr></thead>
             <tbody>${rowsWithout}</tbody></table></div>`
         : `<div class="empty-note">Semua Customer di cabang ini sudah match ke Machine Population.</div>`}
     </div>`;
@@ -3642,9 +3642,9 @@ async function renderCustomerTrend(){
       alert("Library Excel belum siap dimuat (mungkin koneksi internet lambat). Silakan coba lagi beberapa saat.");
       return;
     }
-    const summaryRows = [["Branch", "Customer Cocok Machine Population", "Customer TIDAK Cocok Machine Population", "Total Customer"]];
+    const summaryRows = [["Branch", "Customer Cocok Machine Population", "Customers NOT Matching Machine Population", "Total Customer"]];
     branchCustomerCounts.forEach(b => summaryRows.push([b.branch, b.withPop.length, b.withoutPop.length, b.total]));
-    const detailRows = [["Branch", "Customer (Tidak Match Machine Population)", "Sumber"]];
+    const detailRows = [["Branch", "Customers (Not Matched to Machine Population)", "Source"]];
     branchCustomerCounts.forEach(b => {
       b.withoutPop.forEach(e => {
         const src = [e.quo?"Quotation":null, e.inv?"Invoice":null].filter(Boolean).join(" + ") || "-";
@@ -3661,9 +3661,9 @@ async function renderCustomerTrend(){
     const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
     wsDetail["!cols"] = autoWidth(detailRows);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan per Cabang");
-    XLSX.utils.book_append_sheet(wb, wsDetail, "Tidak Match Population");
-    XLSX.writeFile(wb, `Customer_Tidak_Match_Population_${currentCompany}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary per Branch");
+    XLSX.utils.book_append_sheet(wb, wsDetail, "Not Matched to Population");
+    XLSX.writeFile(wb, `Customers_Not_Matched_Population_${currentCompany}_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   // ---------- Group aggregation ----------
@@ -3687,7 +3687,7 @@ async function renderCustomerTrend(){
     if(c.hadEarlierInv) g.hadEarlierInv = true;
   });
   const groupList = Object.values(groups)
-    .filter(g => g.name !== "(Tanpa Group)") // PT tanpa Group tidak usah muncul di tabel ini — tetap ada di tabel Customer utama
+    .filter(g => g.name !== "(No Group)") // PT tanpa Group tidak usah muncul di tabel ini — tetap ada di tabel Customer utama
     .map(g => {
       g.status = ctClassify(g.hadEarlierInv, g.thisYTDInv, g.lastYTDInv);
       g.growth = ctGrowthSince(g.invoiceYTD, YEARS);
@@ -3698,8 +3698,8 @@ async function renderCustomerTrend(){
   // ---------- KPI ----------
   // Breakdown Aktivitas 3-tingkat (hasil diskusi 2026-10-01, "Opsi B"): Aktif = masih transaksi
   // tahun ini, Churned = pernah beli lalu berhenti, Prospect = punya unit tapi belum pernah beli
-  // sama sekali. Ini pengganti KPI "Total Customer Aktif" lama yang cuma 2 kategori (gabung
-  // Churned+Prospect jadi satu "Tidak Aktif") — sekarang dipisah supaya actionable: Churned
+  // sama sekali. Ini pengganti KPI "Total Active Customers" lama yang cuma 2 kategori (gabung
+  // Churned+Prospect jadi satu "Inactive") — sekarang dipisah supaya actionable: Churned
   // butuh re-activation, Prospect butuh akuisisi baru.
   const countBy = s => customerList.filter(c => c.status === s).length;
   const countByActivity = cat => customerList.filter(c => c.activityCat === cat).length;
@@ -3711,22 +3711,22 @@ async function renderCustomerTrend(){
   const activePct = totalCustomerAll ? Math.round((activeCount / totalCustomerAll) * 100) : 0;
   const kpiHtml = `
     <div class="kpi-row">
-      ${kpiCard("Total Customer", totalCustomerAll.toLocaleString("id-ID"), "Aktif + Berhenti Beli + Prospect", "neutral")}
-      ${kpiCard("✅ Aktif (Masih Transaksi)", activeCount.toLocaleString("id-ID"), `${activePct}% dari Total Customer`, "good")}
-      ${kpiCard("🛑 Berhenti Beli", churnedCount.toLocaleString("id-ID"), "pernah beli, sekarang berhenti, unit masih aktif — perlu re-activation", "bad")}
+      ${kpiCard("Total Customer", totalCustomerAll.toLocaleString("id-ID"), "Active + Lapsed + Prospect", "neutral")}
+      ${kpiCard("✅ Active (Still Transacting)", activeCount.toLocaleString("id-ID"), `${activePct}% of Total Customers`, "good")}
+      ${kpiCard("🛑 Lapsed", churnedCount.toLocaleString("id-ID"), "pernah beli, sekarang berhenti, unit masih aktif — perlu re-activation", "bad")}
       ${kpiCard("🎯 Prospect", prospectCount.toLocaleString("id-ID"), "punya unit aktif, belum pernah beli — perlu akuisisi", "neutral")}
-      ${kpiCard("💤 Tidak Aktif", inactiveCount.toLocaleString("id-ID"), "berhenti beli & tanpa unit aktif — tidak dihitung di Total Customer", "neutral")}
-      ${kpiCard("📈 Naik / 📉 Turun", countBy("up").toLocaleString("id-ID") + " / " + countBy("down").toLocaleString("id-ID"), "dibanding periode sama tahun lalu (Naik / Turun)", "neutral")}
-      ${kpiCard("🆕 Baru", countBy("new").toLocaleString("id-ID"), "baru mulai beli tahun ini", "good")}
+      ${kpiCard("💤 Inactive", inactiveCount.toLocaleString("id-ID"), "berhenti beli & tanpa unit aktif — tidak dihitung di Total Customer", "neutral")}
+      ${kpiCard("📈 Up / 📉 Down", countBy("up").toLocaleString("id-ID") + " / " + countBy("down").toLocaleString("id-ID"), "dibanding periode sama tahun lalu (Up / Down)", "neutral")}
+      ${kpiCard("🆕 New", countBy("new").toLocaleString("id-ID"), "baru mulai beli tahun ini", "good")}
     </div>`;
 
   const branchCustomerTableHtml = branchCustomerCounts.length
     ? `<div class="table-scroll"><table class="ast-table" id="ct-branch-table">
-        <thead><tr><th>Branch</th><th style="text-align:right">✅ Aktif</th><th style="text-align:right">🛑 Berhenti Beli</th><th style="text-align:right">🎯 Prospect</th><th style="text-align:right">Total Customer</th><th style="text-align:right">💤 Tidak Aktif<br><span style="font-weight:400;font-size:9.5px;">(tidak dihitung)</span></th></tr></thead>
+        <thead><tr><th>Branch</th><th style="text-align:right">✅ Active</th><th style="text-align:right">🛑 Lapsed</th><th style="text-align:right">🎯 Prospect</th><th style="text-align:right">Total Customer</th><th style="text-align:right">💤 Inactive<br><span style="font-weight:400;font-size:9.5px;">(tidak dihitung)</span></th></tr></thead>
         <tbody id="ct-branch-tbody">${branchCustomerCounts.map((b,idx) => `
           <tr class="ct-row" data-bidx="${idx}"><td><span class="caret">▶</span>${escapeHtml(b.branch)}</td><td style="text-align:right">${b.active.toLocaleString("id-ID")}</td><td style="text-align:right">${b.churned.toLocaleString("id-ID")}</td><td style="text-align:right">${b.prospect.toLocaleString("id-ID")}</td><td style="text-align:right"><strong>${b.total.toLocaleString("id-ID")}</strong></td><td style="text-align:right;color:var(--ink-soft)">${b.inactive.toLocaleString("id-ID")}</td></tr>
           <tr class="ct-detail" id="ct-branch-detail-${idx}"><td colspan="6">${ctBranchDetailHtml(b)}</td></tr>`).join("")}</tbody>
-        <tfoot><tr style="border-top:2px solid var(--line);font-weight:700;"><td>Total Unik</td><td style="text-align:right">${activeCount.toLocaleString("id-ID")}</td><td style="text-align:right">${churnedCount.toLocaleString("id-ID")}</td><td style="text-align:right">${prospectCount.toLocaleString("id-ID")}</td><td style="text-align:right">${totalCustomerAll.toLocaleString("id-ID")}</td><td style="text-align:right;color:var(--ink-soft)">${inactiveCount.toLocaleString("id-ID")}</td></tr></tfoot>
+        <tfoot><tr style="border-top:2px solid var(--line);font-weight:700;"><td>Unique Total</td><td style="text-align:right">${activeCount.toLocaleString("id-ID")}</td><td style="text-align:right">${churnedCount.toLocaleString("id-ID")}</td><td style="text-align:right">${prospectCount.toLocaleString("id-ID")}</td><td style="text-align:right">${totalCustomerAll.toLocaleString("id-ID")}</td><td style="text-align:right;color:var(--ink-soft)">${inactiveCount.toLocaleString("id-ID")}</td></tr></tfoot>
       </table></div>`
     : `<div class="empty-note">Belum ada data Customer per Cabang.</div>`;
 
@@ -3734,55 +3734,55 @@ async function renderCustomerTrend(){
     ${kpiHtml}
     <div class="card-shell">
       <div class="card-title-row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div class="card-title">Jumlah Customer per Cabang</div>
-        <button class="btn" id="ct-export-branch-mismatch" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel (Tidak Match Population)</button>
+        <div class="card-title">Customer Count per Branch</div>
+        <button class="btn" id="ct-export-branch-mismatch" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel (Not Matched to Population)</button>
       </div>
-      <div class="card-subtitle">Cabang "pemilik" Customer ditentukan dari cabang yang punya Populasi (unit) DAN history Transaksi (Quotation/Invoice) sekaligus — kalau tidak ada cabang yang qualify keduanya, fallback ke cabang manapun yang ada datanya. 1 Customer bisa terhitung di lebih dari 1 Cabang kalau memang genuine ada unit + transaksi di cabang-cabang itu. ✅ Aktif = masih transaksi tahun ini, 🛑 Berhenti Beli = pernah beli lalu berhenti tapi masih punya unit aktif, 🎯 Prospect = punya unit aktif tapi belum pernah beli, 💤 Tidak Aktif = berhenti beli dan tidak punya unit aktif (tidak dihitung di Total Customer). Catatan: 1 Customer yang ada di lebih dari 1 cabang dihitung di tiap cabang tsb, jadi jumlah per cabang bisa lebih besar dari <b>Total Unik</b> (baris bawah) — Total Unik inilah yang sama dengan "Total Customer" di KPI atas, Dashboard Home, dan Machine Population. Klik baris cabang untuk lihat rincian mana yang cocok/tidak cocok dengan Machine Population, atau pakai tombol Export untuk lihat semuanya sekaligus di Excel.</div>
+      <div class="card-subtitle">Cabang "pemilik" Customer ditentukan dari cabang yang punya Populasi (unit) DAN history Transaksi (Quotation/Invoice) sekaligus — kalau tidak ada cabang yang qualify keduanya, fallback ke cabang manapun yang ada datanya. 1 Customer bisa terhitung di lebih dari 1 Cabang kalau memang genuine ada unit + transaksi di cabang-cabang itu. ✅ Active = masih transaksi tahun ini, 🛑 Lapsed = pernah beli lalu berhenti tapi masih punya unit aktif, 🎯 Prospect = punya unit aktif tapi belum pernah beli, 💤 Inactive = berhenti beli dan tidak punya unit aktif (tidak dihitung di Total Customer). Catatan: 1 Customer yang ada di lebih dari 1 cabang dihitung di tiap cabang tsb, jadi jumlah per cabang bisa lebih besar dari <b>Unique Total</b> (baris bawah) — Unique Total inilah yang sama dengan "Total Customer" di KPI atas, Dashboard Home, dan Machine Population. Klik baris cabang untuk lihat rincian mana yang cocok/tidak cocok dengan Machine Population, atau pakai tombol Export untuk lihat semuanya sekaligus di Excel.</div>
       ${branchCustomerTableHtml}
     </div>
     <div class="card-shell">
       <div class="card-title-row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div class="card-title">Semua Customer — Trend Tahunan</div>
+        <div class="card-title">All Customers — Annual Trend</div>
         <button class="btn" id="ct-export-main" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel</button>
       </div>
-      <div class="card-subtitle">Semua kolom tahun di tabel ini dihitung dengan periode yang sama, yaitu <b>Januari–${monthLabel}</b> tiap tahunnya (mengikuti bulan berjalan sekarang) — supaya perbandingan antar tahun apple-to-apple, bukan cuma kolom terakhir. Status/panah membandingkan Jan–${monthLabel} tahun ini vs Jan–${monthLabel} tahun lalu. Selisih dalam rentang ±8% dianggap Stabil. Kolom "Growth sejak ${minYear}" bandingkan tahun pertama data vs sekarang, untuk gambaran besar (Status sendiri cuma lihat 2 tahun terakhir). Kolom "Rata-rata Beli Parts/Unit" = Total Invoice Divisi Parts sejak ${minYear} ÷ Jumlah Unit — makin kecil dibanding Customer sejenis lain, makin besar kemungkinan spare part unitnya "bocor" ke kompetitor. "Populasi Mesin" hanya menghitung unit berstatus <b>Aktif</b> di Machine Population — unit Scrap/Unknown tidak ikut dihitung supaya rata-ratanya tidak bias; kalau Customer punya unit tidak aktif, keterangannya muncul di rincian (klik baris Customer). Total 1 tahun penuh (Jan–Des) untuk tiap tahun tetap bisa dilihat dengan klik baris Customer untuk buka rincian.</div>
+      <div class="card-subtitle">Semua kolom tahun di tabel ini dihitung dengan periode yang sama, yaitu <b>Januari–${monthLabel}</b> tiap tahunnya (mengikuti bulan berjalan sekarang) — supaya perbandingan antar tahun apple-to-apple, bukan cuma kolom terakhir. Status/panah membandingkan Jan–${monthLabel} tahun ini vs Jan–${monthLabel} tahun lalu. Selisih dalam rentang ±8% dianggap Stabil. Kolom "Growth since ${minYear}" bandingkan tahun pertama data vs sekarang, untuk gambaran besar (Status sendiri cuma lihat 2 tahun terakhir). Kolom "Avg. Parts Purchase/Unit" = Total Invoice Divisi Parts sejak ${minYear} ÷ Jumlah Unit — makin kecil dibanding Customer sejenis lain, makin besar kemungkinan spare part unitnya "bocor" ke kompetitor. "Machine Population" hanya menghitung unit berstatus <b>Active</b> di Machine Population — unit Scrap/Unknown tidak ikut dihitung supaya rata-ratanya tidak bias; kalau Customer punya unit tidak aktif, keterangannya muncul di rincian (klik baris Customer). Total 1 tahun penuh (Jan–Des) untuk tiap tahun tetap bisa dilihat dengan klik baris Customer untuk buka rincian.</div>
       <div class="ct-filter-row">
         <div><label>Status</label>
           <select id="ct-status-filter">
-            <option value="ALL">Semua Status</option>
-            <option value="active">✅ Aktif (Masih Transaksi)</option>
-            <option value="churned">🛑 Berhenti Beli (Unit Masih Aktif)</option>
-            <option value="inactive">💤 Tidak Aktif (Tanpa Unit Aktif)</option>
+            <option value="ALL">All Status</option>
+            <option value="active">✅ Active (Still Transacting)</option>
+            <option value="churned">🛑 Lapsed (Units Still Active)</option>
+            <option value="inactive">💤 Inactive (No Active Units)</option>
             <option value="prospect">🎯 Prospect</option>
-            <option value="down">📉 Turun</option>
-            <option value="up">📈 Naik</option>
-            <option value="stop">⏹️ Invoice Berhenti</option>
-            <option value="new">🆕 Baru</option>
-            <option value="stable">🟨 Stabil</option>
-            <option value="none">⚠️ Belum Pernah Beli</option>
+            <option value="down">📉 Down</option>
+            <option value="up">📈 Up</option>
+            <option value="stop">⏹️ Invoice Stopped</option>
+            <option value="new">🆕 New</option>
+            <option value="stable">🟨 Stable</option>
+            <option value="none">⚠️ Never Purchased</option>
           </select>
         </div>
         <div><label>Urutkan</label>
           <select id="ct-sort">
-            <option value="population-desc" selected>Populasi Mesin Terbanyak</option>
-            <option value="name">Nama Customer (A-Z)</option>
-            <option value="growth-asc">Perubahan Tahun Ini Terendah dulu</option>
-            <option value="growth-desc">Perubahan Tahun Ini Tertinggi dulu</option>
-            <option value="growthsince-asc">Growth sejak ${minYear} Terendah dulu</option>
-            <option value="growthsince-desc">Growth sejak ${minYear} Tertinggi dulu</option>
-            <option value="partsperunit-asc">Rata-rata Beli Parts/Unit Terendah dulu</option>
-            <option value="partsperunit-desc">Rata-rata Beli Parts/Unit Tertinggi dulu</option>
-            <option value="value-desc">Nilai Invoice Terbesar</option>
+            <option value="population-desc" selected>Largest Machine Population</option>
+            <option value="name">Customer Name (A-Z)</option>
+            <option value="growth-asc">Lowest YoY Change First</option>
+            <option value="growth-desc">Highest YoY Change First</option>
+            <option value="growthsince-asc">Growth since ${minYear} Terendah dulu</option>
+            <option value="growthsince-desc">Growth since ${minYear} Tertinggi dulu</option>
+            <option value="partsperunit-asc">Lowest Avg. Parts Purchase/Unit First</option>
+            <option value="partsperunit-desc">Highest Avg. Parts Purchase/Unit First</option>
+            <option value="value-desc">Largest Invoice Value</option>
           </select>
         </div>
       </div>
       <div class="ct-table-scroll-y">
         <table class="ast-table" id="ct-main-table">
           <thead><tr>
-            <th>Customer</th><th style="text-align:right">Populasi Mesin (Aktif)</th>
-            <th style="text-align:right">Rata-rata Beli Parts/Unit</th>
+            <th>Customer</th><th style="text-align:right">Machine Population (Active)</th>
+            <th style="text-align:right">Avg. Parts Purchase/Unit</th>
             ${YEARS.map(y => `<th style="text-align:right">Invoice ${y}<br><span style="font-weight:400;font-size:9.5px;">(s.d. ${monthLabel}${y===currentYear?', YTD':''})</span></th>`).join("")}
-            <th>Status</th><th style="text-align:right">Growth sejak ${minYear}</th><th>Catatan Otomatis</th>
+            <th>Status</th><th style="text-align:right">Growth since ${minYear}</th><th>Auto Notes</th>
           </tr></thead>
           <tbody id="ct-main-tbody"></tbody>
         </table>
@@ -3790,16 +3790,16 @@ async function renderCustomerTrend(){
     </div>
     <div class="card-shell">
       <div class="card-title-row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div class="card-title">Trend per Group Customer</div>
+        <div class="card-title">Trend per Customer Group</div>
         <button class="btn" id="ct-export-group" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel</button>
       </div>
       <div class="card-subtitle">Gabungan semua Customer di Group yang sama (kolom GROUP di sheet Machine Population). Klik nama Group untuk lihat rincian per Customer di dalamnya — berguna kalau 1 Customer turun tapi Group-nya tetap naik karena ditutupi Customer lain.</div>
       <div class="ct-table-scroll-y">
         <table class="ast-table" id="ct-group-table">
           <thead><tr>
-            <th>Group</th><th style="text-align:right"># Customer</th><th style="text-align:right">Populasi Mesin (Aktif)</th>
+            <th>Group</th><th style="text-align:right"># Customer</th><th style="text-align:right">Machine Population (Active)</th>
             ${YEARS.map(y => `<th style="text-align:right">Invoice ${y}<br><span style="font-weight:400;font-size:9.5px;">(s.d. ${monthLabel}${y===currentYear?', YTD':''})</span></th>`).join("")}
-            <th>Status</th><th style="text-align:right">Growth sejak ${minYear}</th><th>Catatan Otomatis</th>
+            <th>Status</th><th style="text-align:right">Growth since ${minYear}</th><th>Auto Notes</th>
           </tr></thead>
           <tbody id="ct-group-tbody"></tbody>
         </table>
@@ -3821,7 +3821,7 @@ async function renderCustomerTrend(){
     let rows = "";
     YEARS.forEach(y => {
       const wr = c.quotation[y] ? Math.round((c.invoice[y] / c.quotation[y]) * 100) : (c.invoice[y] ? 100 : 0);
-      rows += `<tr><td>${y}${y===currentYear?' (berjalan)':''}</td><td>${c.quoteCount[y]}</td>
+      rows += `<tr><td>${y}${y===currentYear?' (current)':''}</td><td>${c.quoteCount[y]}</td>
         <td>${fmtRpShort(c.quotation[y])}</td><td>${fmtRpShort(c.invoice[y])}</td><td>${wr}%</td></tr>`;
     });
     const maxVal = Math.max(...YEARS.map(y => Math.max(c.quotation[y], c.invoice[y])), 1);
@@ -3837,11 +3837,11 @@ async function renderCustomerTrend(){
       ? `<div class="note-text flag" style="margin-bottom:10px;">⚠️ Customer ini punya <b>${c.populationInactive}</b> unit TIDAK AKTIF yang tidak ikut dihitung di Populasi Mesin/Rata-rata Beli Parts per Unit: ${c.inactiveUnits.map(u => `${u.statusCat==='scrap'?'⚫ Scrap':'🟡 Unknown'} (SN ${escapeHtml(u.snUnit)}${u.remarks?' — '+escapeHtml(u.remarks):''})`).join("; ")}</div>`
       : "";
     return `<div class="ct-detail-inner">
-      <div style="font-size:10.5px;color:var(--ink-soft);margin-bottom:6px;">Rincian ini memakai <b>Total 1 Tahun Penuh (Jan–Des)</b> sebagai referensi historis — beda basis dari kolom ringkasan di tabel atas yang memakai Jan–${monthLabel} supaya apple-to-apple.</div>
+      <div style="font-size:10.5px;color:var(--ink-soft);margin-bottom:6px;">Rincian ini memakai <b>Full Year Total (Jan–Dec)</b> sebagai referensi historis — beda basis dari kolom ringkasan di tabel atas yang memakai Jan–${monthLabel} supaya apple-to-apple.</div>
       ${inactiveNote}
       <div class="ct-detail-grid">
       <div class="ct-detail-table-wrap"><table class="ct-detail-table">
-        <thead><tr><th>Tahun</th><th># Quotation</th><th>Nilai Quotation</th><th>Nilai Invoice</th><th>Win Rate</th></tr></thead>
+        <thead><tr><th>Year</th><th># Quotation</th><th>Quotation Value</th><th>Invoice Value</th><th>Win Rate</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
       <div class="ct-detail-chart-wrap"><div class="ct-mini-bars">${bars}</div>
         <div class="ct-mini-legend"><span><span class="ct-dot" style="background:var(--gold)"></span> Quotation</span>
@@ -3887,9 +3887,9 @@ async function renderCustomerTrend(){
   }
 
   function ctExportMain(){
-    const headers = ["Customer", "Kategori Aktivitas", "Populasi Mesin (Aktif)", `Rata-rata Beli Parts/Unit (sejak ${minYear})`,
+    const headers = ["Customer", "Activity Category", "Machine Population (Active)", `Avg. Parts Purchase/Unit (since ${minYear})`,
       ...YEARS.map(y => `Invoice ${y} (s.d. ${monthLabel})`),
-      "Status Invoice", "Status Quotation", `Growth sejak ${minYear} (%)`, "Catatan Otomatis"];
+      "Invoice Status", "Status Quotation", `Growth since ${minYear} (%)`, "Auto Notes"];
     const rows = [headers];
     ctMainListCache.forEach(c => {
       rows.push([
@@ -3912,7 +3912,7 @@ async function renderCustomerTrend(){
     });
     return `<div class="ct-detail-inner"><div class="ct-detail-table-wrap" style="max-width:680px;">
       <table class="ct-detail-table">
-        <thead><tr><th>Customer di Group Ini</th><th>Populasi</th><th>Invoice ${currentYear-1} (s.d. ${monthLabel})</th><th>Invoice ${currentYear} (s.d. ${monthLabel})</th><th>Status</th></tr></thead>
+        <thead><tr><th>Customers in This Group</th><th>Population</th><th>Invoice ${currentYear-1} (s.d. ${monthLabel})</th><th>Invoice ${currentYear} (s.d. ${monthLabel})</th><th>Status</th></tr></thead>
         <tbody>${rows}</tbody></table></div></div>`;
   }
 
@@ -3946,9 +3946,9 @@ async function renderCustomerTrend(){
   }
 
   function ctExportGroups(){
-    const headers = ["Group", "# Customer", "Populasi Mesin (Aktif)",
+    const headers = ["Group", "# Customer", "Machine Population (Active)",
       ...YEARS.map(y => `Invoice ${y} (s.d. ${monthLabel})`),
-      "Status", `Growth sejak ${minYear} (%)`, "Catatan Otomatis"];
+      "Status", `Growth since ${minYear} (%)`, "Auto Notes"];
     const rows = [headers];
     groupList.forEach(g => {
       rows.push([
@@ -4049,7 +4049,7 @@ async function renderCustomerCoverage(){
   // tapi masih kebaca Prospect di cabang lama tsb).
   const popActiveRows = popRows.filter(r => r.statusCat === "active");
 
-  // Cabang "pemilik" Customer — logika SAMA dengan "Jumlah Customer per Cabang" di Customer
+  // Cabang "pemilik" Customer — logika SAMA dengan "Customer Count per Branch" di Customer
   // Trend (hasil diskusi 2026-10-01 & 2026-10-02): AND diutamakan (Populasi AKTIF & Transaksi di
   // cabang yang sama); kalau tidak ada AND tapi Customer punya unit AKTIF di cabang tertentu,
   // pakai cabang unit aktifnya itu saja (transaksi "numpang" di cabang lain tidak ikut
@@ -4159,7 +4159,7 @@ async function renderCustomerCoverage(){
 
   // ---- Chart tren 12 bulan (1 garis per cabang + 1 garis Total, % coverage) ----
   const lineDatasets = [
-    { label:"Semua Cabang", color:"#3a3226", data: totalPctData },
+    { label:"All Branches", color:"#3a3226", data: totalPctData },
     ...branches.map((b,i) => ({
       label: b, color: PIE_PALETTE[i % PIE_PALETTE.length],
       data: periods.map(pk => {
@@ -4171,7 +4171,7 @@ async function renderCustomerCoverage(){
   ];
 
   // ---- Tabel heatmap Bulan x Cabang ----
-  const heatHead = `<th>Cabang</th>${periodLabels.map(l=>`<th style="text-align:center">${escapeHtml(l)}</th>`).join("")}<th style="text-align:center">Customer Terukur (Aktif+Berhenti Beli)</th>`;
+  const heatHead = `<th>Branch</th>${periodLabels.map(l=>`<th style="text-align:center">${escapeHtml(l)}</th>`).join("")}<th style="text-align:center">Measured Customers (Active+Lapsed)</th>`;
   const heatRow = (label, base, coveredFn, bold) => {
     const cells = periods.map(pk => {
       const covered = coveredFn(pk);
@@ -4184,17 +4184,17 @@ async function renderCustomerCoverage(){
     return `<tr${bold?' style="border-top:2px solid var(--gridline)"':''}><td>${bold?'<strong>':''}${escapeHtml(label)}${bold?'</strong>':''}</td>${cells}<td style="text-align:center">${bold?'<strong>':''}${base.toLocaleString("id-ID")}${bold?'</strong>':''}</td></tr>`;
   };
   const heatBody = branches.map(b => heatRow(b, eligibleByBranch[b].size, pk => [...(coveredByBranchPeriod[b]?.[pk] || [])].filter(k => eligibleByBranch[b].has(k)).length, false)).join("")
-    + heatRow("Semua Cabang", totalEligibleAll.size, pk => {
+    + heatRow("All Branches", totalEligibleAll.size, pk => {
         const s = new Set();
         branches.forEach(b => { const set = coveredByBranchPeriod[b]?.[pk]; if(set) set.forEach(k=>{ if(eligibleByBranch[b].has(k)) s.add(k); }); });
         return s.size;
       }, true);
   // ---- Rincian customer tercover per SUMBER transaksi (per bulan, semua cabang terpilih) ----
   // Tiap customer tercover dimasukkan ke SATU kelompok (prioritas): Invoice Type kategori >
-  // Invoice Type lain saja > Quotation tanpa Invoice > Parts Delivery saja — jadi jumlahnya
+  // Invoice Type lain saja > Quotation without Invoice > Parts Delivery saja — jadi jumlahnya
   // pas = total tercover bulan itu. Acuan Invoice = kolom TYPE (bukan Division turunan).
   // Aturan "tercover" sama persis dengan heatmap di atas (transaksi di cabang tsb DAN customer
-  // termasuk Customer Terukur cabang itu).
+  // termasuk Measured Customers cabang itu).
   const catTypeSet = new Set(invoiceCategoryTypes().map(t => t.trim().toLowerCase()));
   const srcFlags = {}; // periodKey -> key -> { invCat, invOther, quo, pd }
   function markSrc(branch, customer, date, flag){
@@ -4223,7 +4223,7 @@ async function renderCustomerCoverage(){
 
   // ---- Dilayani tapi dimiliki cabang lain (informasi — TIDAK ikut Coverage %) ----
   // Customer yang punya transaksi (Quotation/Invoice/Parts Delivery) di cabang b pada bulan tsb,
-  // tapi bukan Customer Terukur cabang b karena pemiliknya cabang lain.
+  // tapi bukan Measured Customers cabang b karena pemiliknya cabang lain.
   const crossServed = {}; // b -> pk -> Map(key -> { name, owners, invCat })
   function markCross(branch, customer, date, isInvCat){
     const b = String(branch||"").trim();
@@ -4244,10 +4244,10 @@ async function renderCustomerCoverage(){
   pdRows.forEach(r => markCross(r.branch, r.customer, r.date, false));
   const crossBranches = branches.filter(b => periods.some(pk => crossServed[b]?.[pk]?.size));
   const crossTableHtml = crossBranches.length ? `<div class="card-shell">
-      <div class="card-title">Dilayani, Dimiliki Cabang Lain — 12 Bulan Terakhir</div>
-      <div class="card-subtitle">Customer yang bertransaksi (Quotation/Invoice/Parts Delivery) di cabang ini, tetapi unit aktifnya tercatat di cabang lain. <b>Tidak ikut</b> Coverage % (supaya pembagi dan pembilang sebanding) — ditampilkan sebagai informasi. Ini penyebab selisih dengan "Customer Bertransaksi" di Top Customer. Arahkan kursor ke angka untuk melihat nama customer dan cabang pemiliknya (★ = punya Invoice Type kategori).</div>
+      <div class="card-title">Served, Owned by Another Branch — Last 12 Months</div>
+      <div class="card-subtitle">Customer yang bertransaksi (Quotation/Invoice/Parts Delivery) di cabang ini, tetapi unit aktifnya tercatat di cabang lain. <b>Excluded</b> Coverage % (supaya pembagi dan pembilang sebanding) — ditampilkan sebagai informasi. Ini penyebab selisih dengan "Transacting Customers" di Top Customer. Arahkan kursor ke angka untuk melihat nama customer dan cabang pemiliknya (★ = punya Invoice Type kategori).</div>
       <div class="table-scroll"><table class="ast-table">
-        <thead><tr><th>Cabang</th>${periodLabels.map(l => `<th style="text-align:right">${escapeHtml(l)}</th>`).join("")}</tr></thead>
+        <thead><tr><th>Branch</th>${periodLabels.map(l => `<th style="text-align:right">${escapeHtml(l)}</th>`).join("")}</tr></thead>
         <tbody>${crossBranches.map(b => `<tr><td>${escapeHtml(b)}</td>${periods.map(pk => {
           const m = crossServed[b]?.[pk];
           if(!m || !m.size) return `<td style="text-align:right;color:var(--ink-soft)">–</td>`;
@@ -4257,41 +4257,41 @@ async function renderCustomerCoverage(){
       </table></div></div>` : "";
 
   const sourceTableHtml = branches.length ? `<div class="card-shell">
-      <div class="card-title">Rincian Customer Tercover per Sumber Transaksi — 12 Bulan Terakhir</div>
-      <div class="card-subtitle">Menjawab "kenapa Coverage lebih banyak dari Customer yang punya Invoice": customer dihitung tercover walau baru sampai Quotation atau Parts Delivery. Tiap customer tercover dimasukkan ke satu kelompok saja (urutan prioritas dari kiri ke kanan). Customer yang hanya punya Invoice dengan Type di luar kategori tidak ditampilkan di kolom rincian, jadi jumlah ketiga kolom bisa lebih kecil dari Total Tercover. <b>Invoice (Type kategori)</b> memakai kolom <b>Type</b> di Sales Invoice (${escapeHtml(invoiceCategoryTypes().join(", "))}) — acuannya sama dengan menu Top Customer; kolom Division turunan tidak dipakai. Mengikuti filter Cabang yang dipilih.</div>
+      <div class="card-title">Covered Customers by Transaction Source — Last 12 Months</div>
+      <div class="card-subtitle">Menjawab "kenapa Coverage lebih banyak dari Customer yang punya Invoice": customer dihitung tercover walau baru sampai Quotation atau Parts Delivery. Tiap customer tercover dimasukkan ke satu kelompok saja (urutan prioritas dari kiri ke kanan). Customer yang hanya punya Invoice dengan Type di luar kategori tidak ditampilkan di kolom rincian, jadi jumlah ketiga kolom bisa lebih kecil dari Total Tercover. <b>Invoice (Type category)</b> memakai kolom <b>Type</b> di Sales Invoice (${escapeHtml(invoiceCategoryTypes().join(", "))}) — acuannya sama dengan menu Top Customer; kolom Division turunan tidak dipakai. Mengikuti filter Cabang yang dipilih.</div>
       <div class="table-scroll"><table class="ast-table">
-        <thead><tr><th>Bulan</th><th style="text-align:right">Total Tercover</th><th style="text-align:right">Invoice (Type kategori)</th><th style="text-align:right">Quotation tanpa Invoice</th><th style="text-align:right">Hanya Parts Delivery</th></tr></thead>
+        <thead><tr><th>Month</th><th style="text-align:right">Total Covered</th><th style="text-align:right">Invoice (Type category)</th><th style="text-align:right">Quotation without Invoice</th><th style="text-align:right">Parts Delivery Only</th></tr></thead>
         <tbody>${sourceRows.map(r => `<tr><td>${escapeHtml(r.label)}</td><td style="text-align:right"><strong>${nf(r.total)}</strong></td><td style="text-align:right">${nf(r.invCat)}</td><td style="text-align:right">${nf(r.quoOnly)}</td><td style="text-align:right">${nf(r.pdOnly)}</td></tr>`).join("")}</tbody>
       </table></div></div>` : "";
 
   const heatmapHtml = branches.length
-    ? `<div class="card-shell"><div class="card-title">Coverage Customer per Cabang — 12 Bulan Terakhir</div>
-        <div class="card-subtitle">% dari Customer Terukur (Aktif + Berhenti Beli) cabang (Prospect dan Tidak Aktif TIDAK ikut jadi pembagi) yang punya minimal 1 transaksi (Quotation/Invoice/Parts Delivery) pada bulan tsb. Merah = coverage rendah, Kuning = sedang, Hijau = tinggi.</div>
+    ? `<div class="card-shell"><div class="card-title">Customer Coverage per Branch — Last 12 Months</div>
+        <div class="card-subtitle">% dari Measured Customers (Aktif + Lapsed) cabang (Prospect dan Tidak Aktif TIDAK ikut jadi pembagi) yang punya minimal 1 transaksi (Quotation/Invoice/Parts Delivery) pada bulan tsb. Merah = coverage rendah, Kuning = sedang, Hijau = tinggi.</div>
         <div class="table-scroll"><table class="ast-table"><thead><tr>${heatHead}</tr></thead><tbody>${heatBody}</tbody></table></div></div>`
-    : `<div class="card-shell"><div class="card-title">Coverage Customer per Cabang — 12 Bulan Terakhir</div><div class="empty-note">Belum ada data.</div></div>`;
+    : `<div class="card-shell"><div class="card-title">Customer Coverage per Branch — Last 12 Months</div><div class="empty-note">Belum ada data.</div></div>`;
 
   // ---- Tabel breakdown Aktivitas per Cabang (Aktif/Churned/Prospect) ----
   const activityTableHtml = activityBreakdown.length
-    ? `<div class="card-shell"><div class="card-title">Breakdown Aktivitas Customer per Cabang</div>
-        <div class="card-subtitle">✅ Aktif = masih transaksi tahun ini, 🛑 Berhenti Beli = pernah beli lalu berhenti tapi unit masih aktif, 🎯 Prospect = punya unit aktif tapi belum pernah beli, 💤 Tidak Aktif = berhenti beli dan tanpa unit aktif (tidak dihitung di Total Customer). Cabang "pemilik" Customer memakai definisi yang sama dengan "Jumlah Customer per Cabang" di Customer Trend (Populasi+Transaksi di cabang yang sama).</div>
+    ? `<div class="card-shell"><div class="card-title">Customer Activity Breakdown per Branch</div>
+        <div class="card-subtitle">✅ Active = masih transaksi tahun ini, 🛑 Lapsed = pernah beli lalu berhenti tapi unit masih aktif, 🎯 Prospect = punya unit aktif tapi belum pernah beli, 💤 Inactive = berhenti beli dan tanpa unit aktif (tidak dihitung di Total Customer). Cabang "pemilik" Customer memakai definisi yang sama dengan "Customer Count per Branch" di Customer Trend (Populasi+Transaksi di cabang yang sama).</div>
         <div class="table-scroll"><table class="ast-table">
-          <thead><tr><th>Cabang</th><th style="text-align:right">✅ Aktif</th><th style="text-align:right">🛑 Berhenti Beli</th><th style="text-align:right">🎯 Prospect</th><th style="text-align:right">Total Customer</th><th style="text-align:right">💤 Tidak Aktif (tidak dihitung)</th></tr></thead>
+          <thead><tr><th>Branch</th><th style="text-align:right">✅ Active</th><th style="text-align:right">🛑 Lapsed</th><th style="text-align:right">🎯 Prospect</th><th style="text-align:right">Total Customer</th><th style="text-align:right">💤 Inactive (not counted)</th></tr></thead>
           <tbody>${activityBreakdown.map(b => `<tr><td>${escapeHtml(b.branch)}</td><td style="text-align:right">${b.active.toLocaleString("id-ID")}</td><td style="text-align:right">${b.churned.toLocaleString("id-ID")}</td><td style="text-align:right">${b.prospect.toLocaleString("id-ID")}</td><td style="text-align:right"><strong>${b.total.toLocaleString("id-ID")}</strong></td><td style="text-align:right;color:var(--ink-soft)">${b.inactive.toLocaleString("id-ID")}</td></tr>`).join("")}</tbody>
-          <tfoot><tr style="border-top:2px solid var(--line);font-weight:700;"><td>Total Unik</td><td style="text-align:right">${uniqueByCat.active.size.toLocaleString("id-ID")}</td><td style="text-align:right">${uniqueByCat.churned.size.toLocaleString("id-ID")}</td><td style="text-align:right">${uniqueByCat.prospect.size.toLocaleString("id-ID")}</td><td style="text-align:right">${uniqueTotalCustomer.toLocaleString("id-ID")}</td><td style="text-align:right;color:var(--ink-soft)">${uniqueByCat.inactive.size.toLocaleString("id-ID")}</td></tr></tfoot>
+          <tfoot><tr style="border-top:2px solid var(--line);font-weight:700;"><td>Unique Total</td><td style="text-align:right">${uniqueByCat.active.size.toLocaleString("id-ID")}</td><td style="text-align:right">${uniqueByCat.churned.size.toLocaleString("id-ID")}</td><td style="text-align:right">${uniqueByCat.prospect.size.toLocaleString("id-ID")}</td><td style="text-align:right">${uniqueTotalCustomer.toLocaleString("id-ID")}</td><td style="text-align:right;color:var(--ink-soft)">${uniqueByCat.inactive.size.toLocaleString("id-ID")}</td></tr></tfoot>
         </table></div>
-        <div class="card-subtitle" style="margin-top:8px;">Catatan: 1 Customer yang punya unit + transaksi di lebih dari 1 cabang dihitung di tiap cabang tsb, jadi jumlah per cabang bisa lebih besar dari <b>Total Unik</b>. Total Unik inilah yang sama dengan "Total Customer" di Customer Trend, Dashboard Home, dan Machine Population.</div></div>`
+        <div class="card-subtitle" style="margin-top:8px;">Catatan: 1 Customer yang punya unit + transaksi di lebih dari 1 cabang dihitung di tiap cabang tsb, jadi jumlah per cabang bisa lebih besar dari <b>Unique Total</b>. Unique Total inilah yang sama dengan "Total Customer" di Customer Trend, Dashboard Home, dan Machine Population.</div></div>`
     : "";
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Total Customer", uniqueTotalCustomer.toLocaleString("id-ID"), "Aktif + Berhenti Beli + Prospect (sama dgn Customer Trend)", "neutral")}
-      ${kpiCard("Coverage Bulan Ini (" + periodLabel(curPeriod) + ")", coveragePctAll + "%", totalCoveredCurCount.toLocaleString("id-ID") + " dari " + totalEligibleAll.size.toLocaleString("id-ID") + " Customer Terukur (Aktif + Berhenti Beli) — " + uniqueByCat.prospect.size.toLocaleString("id-ID") + " Prospect tidak ikut dihitung", coveragePctAll>=50?"good":"bad")}
-      ${bestBranch ? kpiCard("Coverage Tertinggi", bestBranch.branch + " · " + bestBranch.pct + "%", bestBranch.covered + " dari " + bestBranch.base + " customer", "good") : kpiCard("Coverage Tertinggi","—","","neutral")}
-      ${worstBranch ? kpiCard("Coverage Terendah", worstBranch.branch + " · " + worstBranch.pct + "%", worstBranch.covered + " dari " + worstBranch.base + " customer", "bad") : kpiCard("Coverage Terendah","—","","neutral")}
-      ${kpiCard("Cabang Dianalisis", branches.length.toLocaleString("id-ID"), "", "neutral")}
+      ${kpiCard("Total Customer", uniqueTotalCustomer.toLocaleString("id-ID"), "Active + Lapsed + Prospect (same as Customer Trend)", "neutral")}
+      ${kpiCard("Coverage This Month (" + periodLabel(curPeriod) + ")", coveragePctAll + "%", totalCoveredCurCount.toLocaleString("id-ID") + " dari " + totalEligibleAll.size.toLocaleString("id-ID") + " Measured Customers (Active + Lapsed) — " + uniqueByCat.prospect.size.toLocaleString("id-ID") + " Prospects not counted", coveragePctAll>=50?"good":"bad")}
+      ${bestBranch ? kpiCard("Highest Coverage", bestBranch.branch + " · " + bestBranch.pct + "%", bestBranch.covered + " dari " + bestBranch.base + " customer", "good") : kpiCard("Highest Coverage","—","","neutral")}
+      ${worstBranch ? kpiCard("Lowest Coverage", worstBranch.branch + " · " + worstBranch.pct + "%", worstBranch.covered + " dari " + worstBranch.base + " customer", "bad") : kpiCard("Lowest Coverage","—","","neutral")}
+      ${kpiCard("Branches Analyzed", branches.length.toLocaleString("id-ID"), "", "neutral")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-coverage-trend", "Tren Coverage Customer per Cabang (12 Bulan)", "% Customer Terukur (Aktif+Berhenti Beli) tercover per bulan (transaksi Quotation/Invoice/Parts Delivery), per cabang")}
+      ${chartCardShell("chart-coverage-trend", "Customer Coverage Trend per Branch (12 Months)", "% Measured Customers (Aktif+Lapsed) tercover per bulan (transaksi Quotation/Invoice/Parts Delivery), per cabang")}
     </div>
     ${heatmapHtml}
     ${sourceTableHtml}
@@ -4348,7 +4348,7 @@ async function renderTopCustomer(){
   const share = grandTotal ? Math.round(topTotal / grandTotal * 100) : 0;
   const periodTxt = (globalFilters.dateFrom || globalFilters.dateTo)
     ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "awal"} s.d. ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "sekarang"}`
-    : "Semua periode";
+    : "All periods";
 
   const head = ["#", "Customer", ...TYPES, "Total"];
   const bodyHtml = top.map((c, i) => `<tr>
@@ -4363,16 +4363,16 @@ async function renderTopCustomer(){
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Total Belanja Top " + top.length, fmtRpShort(topTotal), periodTxt, "good")}
-      ${kpiCard("Porsi dari Total Invoice", share + "%", "dari " + fmtRpShort(grandTotal) + " (kategori yang ditampilkan)", "neutral")}
-      ${kpiCard("Customer Bertransaksi", all.length.toLocaleString("id-ID"), "pada periode & cabang terpilih", "neutral")}
+      ${kpiCard("Top Total Spend " + top.length, fmtRpShort(topTotal), periodTxt, "good")}
+      ${kpiCard("Share of Total Invoice", share + "%", "dari " + fmtRpShort(grandTotal) + " (kategori yang ditampilkan)", "neutral")}
+      ${kpiCard("Transacting Customers", all.length.toLocaleString("id-ID"), "pada periode & cabang terpilih", "neutral")}
     </div>
     <div class="card-shell">
       <div class="card-title-row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div class="card-title">Top 20 Customer — Nilai Invoice per Kategori</div>
+        <div class="card-title">Top 20 Customers — Invoice Value per Category</div>
         <button class="btn" id="tc-export" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel</button>
       </div>
-      <div class="card-subtitle">Periode: <b>${escapeHtml(periodTxt)}</b> (mengikuti filter tanggal & cabang di atas). Diurutkan dari total nilai Invoice terbesar. Hanya kategori ${TYPES.join(", ")} yang dihitung — Invoice dengan Type lain diabaikan. Nama Customer yang pernah rename/merger sudah disatukan lewat tab Customer Alias.</div>
+      <div class="card-subtitle">Period: <b>${escapeHtml(periodTxt)}</b> (mengikuti filter tanggal & cabang di atas). Diurutkan dari total nilai Invoice terbesar. Hanya kategori ${TYPES.join(", ")} yang dihitung — Invoice dengan Type lain diabaikan. Nama Customer yang pernah rename/merger sudah disatukan lewat tab Customer Alias.</div>
       ${top.length
         ? `<div class="table-scroll"><table class="ast-table"><thead><tr>${head.map((h, i) => `<th${i >= 2 ? ' style="text-align:right"' : ''}>${escapeHtml(h)}</th>`).join("")}</tr></thead><tbody>${bodyHtml}${footHtml}</tbody></table></div>`
         : `<div class="empty-note">Belum ada data Invoice pada periode ini.</div>`}
@@ -4381,7 +4381,7 @@ async function renderTopCustomer(){
   if(btn) btn.addEventListener("click", () => {
     const out = [["#", "Customer", ...TYPES, "Total"]];
     top.forEach((c, i) => out.push([i + 1, c.name, ...c.vals.map(v => Math.round(v)), Math.round(c.total)]));
-    out.push(["", "Total Top " + top.length, ...TYPES.map((_, ti) => Math.round(top.reduce((a, c) => a + c.vals[ti], 0))), Math.round(topTotal)]);
+    out.push(["", "Top Total " + top.length, ...TYPES.map((_, ti) => Math.round(top.reduce((a, c) => a + c.vals[ti], 0))), Math.round(topTotal)]);
     ctDownloadExcel("Top_Customer_" + new Date().toISOString().slice(0,10) + ".xlsx", "Top Customer", out);
   });
 }
@@ -4430,7 +4430,7 @@ async function renderCommodity(){
   const topCust = custList.slice(0,20);
   const invCount = new Set(invRows.map(r=>r.invoice).filter(Boolean)).size;
 
-  // ---- Tren 12 bulan (berakhir di bulan "Sampai", atau bulan ini) ----
+  // ---- Tren 12 bulan (berakhir di bulan "To", atau bulan ini) ----
   const endRef = globalFilters.dateTo || new Date();
   const monthKeys = [];
   for(let i=11;i>=0;i--){ const d = new Date(endRef.getFullYear(), endRef.getMonth()-i, 1); monthKeys.push(periodKey(d)); }
@@ -4474,38 +4474,38 @@ async function renderCommodity(){
   const exportBtn = id => `<button class="btn" id="${id}" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel</button>`;
   const titleRow = (title, btnId) => `<div class="card-title-row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div class="card-title">${title}</div>${exportBtn(btnId)}</div>`;
 
-  const custTable = topCust.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr>${th("#")}${th("Customer")}${th("Invoice",true)}${th("Nilai Invoice",true)}${th("Porsi",true)}</tr></thead><tbody>${
+  const custTable = topCust.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr>${th("#")}${th("Customer")}${th("Invoice",true)}${th("Invoice Value",true)}${th("Share",true)}</tr></thead><tbody>${
     topCust.map((c,i)=>`<tr><td style="text-align:right;color:var(--ink-soft)">${i+1}</td><td>${escapeHtml(c.name)}</td><td style="text-align:right">${c.invoices.size}</td><td style="text-align:right"><strong>${fmtRp(c.value)}</strong></td><td style="text-align:right">${invTotal?Math.round(c.value/invTotal*100):0}%</td></tr>`).join("")
   }</tbody></table></div>` : `<div class="empty-note">Belum ada Invoice bertipe Tyre pada periode & cabang ini.</div>`;
 
-  const itemTable = topItems.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr>${th("#")}${th("Item No")}${th("Deskripsi")}${th("Qty",true)}${th("Baris Delivery",true)}${th("Customer",true)}</tr></thead><tbody>${
+  const itemTable = topItems.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr>${th("#")}${th("Item No")}${th("Description")}${th("Qty",true)}${th("Delivery Lines",true)}${th("Customer",true)}</tr></thead><tbody>${
     topItems.map((x,i)=>`<tr><td style="text-align:right;color:var(--ink-soft)">${i+1}</td><td>${escapeHtml(x.item)}</td><td>${escapeHtml(x.desc||"-")}</td><td style="text-align:right"><strong>${num(x.qty)}</strong></td><td style="text-align:right">${x.lines}</td><td style="text-align:right">${x.custs.size}</td></tr>`).join("")
   }</tbody></table></div>` : `<div class="empty-note">Belum ada item Tyre di Parts Delivery pada periode & cabang ini.</div>`;
 
-  const pdCustTable = pdCustList.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr>${th("#")}${th("Customer")}${th("Qty",true)}${th("Delivery",true)}${th("Jenis Item",true)}</tr></thead><tbody>${
+  const pdCustTable = pdCustList.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr>${th("#")}${th("Customer")}${th("Qty",true)}${th("Delivery",true)}${th("Item Type",true)}</tr></thead><tbody>${
     pdCustList.map((c,i)=>`<tr><td style="text-align:right;color:var(--ink-soft)">${i+1}</td><td>${escapeHtml(c.name)}</td><td style="text-align:right"><strong>${num(c.qty)}</strong></td><td style="text-align:right">${c.deliveries.size}</td><td style="text-align:right">${c.items.size}</td></tr>`).join("")
   }</tbody></table></div>` : `<div class="empty-note">Belum ada pengiriman item Tyre pada periode & cabang ini.</div>`;
 
   pageBody.innerHTML = `
     <div class="kpi-row">
-      ${kpiCard("Penjualan Tyre — " + periodTxt, fmtRpShort(invTotal), invCount.toLocaleString("id-ID") + " invoice (Type = Tyre)", "good")}
-      ${kpiCard("Customer Tyre (Invoice)", custList.length.toLocaleString("id-ID"), "customer dengan nilai Invoice Tyre", "neutral")}
-      ${kpiCard("Qty Tyre Terkirim", num(totalQty), itemList.length.toLocaleString("id-ID") + " jenis item (Parts Delivery)", "neutral")}
+      ${kpiCard("Tyre Sales — " + periodTxt, fmtRpShort(invTotal), invCount.toLocaleString("id-ID") + " invoice (Type = Tyre)", "good")}
+      ${kpiCard("Customer Tyre (Invoice)", custList.length.toLocaleString("id-ID"), "customers with Tyre Invoice value", "neutral")}
+      ${kpiCard("Tyre Qty Delivered", num(totalQty), itemList.length.toLocaleString("id-ID") + " item types (Parts Delivery)", "neutral")}
     </div>
-    ${chartCardShell("chart-tyre-trend", "Tren Penjualan Tyre — 12 Bulan", "Nilai Invoice Type Tyre per bulan, mengikuti filter Cabang (tidak ikut filter tanggal)")}
+    ${chartCardShell("chart-tyre-trend", "Tyre Sales Trend — 12 Months", "Nilai Invoice Type Tyre per bulan, mengikuti filter Cabang (tidak ikut filter tanggal)")}
     <div class="card-shell">
-      ${titleRow("Top 20 Customer Tyre — Nilai Invoice", "cm-exp-cust")}
-      <div class="card-subtitle">Sumber: Sales Invoice, Type = Tyre. Periode <b>${escapeHtml(periodTxt)}</b>. Nama customer sudah disatukan lewat tab Customer Alias.</div>
+      ${titleRow("Top 20 Tyre Customers — Invoice Value", "cm-exp-cust")}
+      <div class="card-subtitle">Source: Sales Invoice, Type = Tyre. Periode <b>${escapeHtml(periodTxt)}</b>. Nama customer sudah disatukan lewat tab Customer Alias.</div>
       ${custTable}
     </div>
     <div class="card-shell">
-      ${titleRow("Top 20 Item Tyre Terlaris — Qty Terkirim", "cm-exp-item")}
-      <div class="card-subtitle">Sumber: Parts Delivery. Item dianggap Tyre bila Item No diawali ${COMMODITY_TYRE.itemPrefixes.join(" / ")} atau mengandung ${COMMODITY_TYRE.itemContains.join(" / ")}. Baris yang cocok: ${escapeHtml(kindTxt)}. Parts Delivery hanya mencatat qty, bukan nilai Rupiah.</div>
+      ${titleRow("Top 20 Best-Selling Tyre Items — Qty Delivered", "cm-exp-item")}
+      <div class="card-subtitle">Source: Parts Delivery. Item dianggap Tyre bila Item No diawali ${COMMODITY_TYRE.itemPrefixes.join(" / ")} atau mengandung ${COMMODITY_TYRE.itemContains.join(" / ")}. Baris yang cocok: ${escapeHtml(kindTxt)}. Parts Delivery hanya mencatat qty, bukan nilai Rupiah.</div>
       ${itemTable}
     </div>
     <div class="card-shell">
-      ${titleRow("Top 20 Customer Tyre — Qty Terkirim", "cm-exp-pdcust")}
-      <div class="card-subtitle">Sumber: Parts Delivery (item Tyre). Kolom "Jenis Item" = jumlah Item No Tyre berbeda yang diterima customer.</div>
+      ${titleRow("Top 20 Tyre Customers — Qty Delivered", "cm-exp-pdcust")}
+      <div class="card-subtitle">Source: Parts Delivery (item Tyre). Kolom "Item Type" = jumlah Item No Tyre berbeda yang diterima customer.</div>
       ${pdCustTable}
     </div>`;
 
@@ -4513,11 +4513,11 @@ async function renderCommodity(){
   const wire = (id, fn) => { const b = document.getElementById(id); if(b) b.addEventListener("click", fn); };
   const stamp = new Date().toISOString().slice(0,10);
   wire("cm-exp-cust", () => ctDownloadExcel("Tyre_Customer_Invoice_" + stamp + ".xlsx", "Customer Tyre",
-    [["#","Customer","Jumlah Invoice","Nilai Invoice"], ...custList.map((c,i)=>[i+1, c.name, c.invoices.size, Math.round(c.value)])]));
-  wire("cm-exp-item", () => ctDownloadExcel("Tyre_Item_Terlaris_" + stamp + ".xlsx", "Item Tyre",
-    [["#","Item No","Deskripsi","Qty","Baris Delivery","Jumlah Customer"], ...itemList.map((x,i)=>[i+1, x.item, x.desc||"", x.qty, x.lines, x.custs.size])]));
+    [["#","Customer","Invoice Count","Invoice Value"], ...custList.map((c,i)=>[i+1, c.name, c.invoices.size, Math.round(c.value)])]));
+  wire("cm-exp-item", () => ctDownloadExcel("Tyre_Best_Selling_Items_" + stamp + ".xlsx", "Item Tyre",
+    [["#","Item No","Description","Qty","Delivery Lines","Customer Count"], ...itemList.map((x,i)=>[i+1, x.item, x.desc||"", x.qty, x.lines, x.custs.size])]));
   wire("cm-exp-pdcust", () => ctDownloadExcel("Tyre_Customer_Qty_" + stamp + ".xlsx", "Customer Tyre Qty",
-    [["#","Customer","Qty","Jumlah Delivery","Jenis Item"], ...Object.values(byPdCust).sort((a,b)=>b.qty-a.qty).map((c,i)=>[i+1, c.name, c.qty, c.deliveries.size, c.items.size])]));
+    [["#","Customer","Qty","Delivery Count","Item Type"], ...Object.values(byPdCust).sort((a,b)=>b.qty-a.qty).map((c,i)=>[i+1, c.name, c.qty, c.deliveries.size, c.items.size])]));
 }
 
 /* ============================================================== *
@@ -4581,11 +4581,11 @@ async function renderPssrPerformance(){
     if(!groups[k]) groups[k] = { name: groupLabel(name, br), branches: new Set(), rev: { IPE:0, IKE:0 }, budget: { IPE:0, IKE:0 }, vals: TYPES.map(() => 0), custs: new Set(), invs: new Set(), mtd: { rev:0, bud:0 }, ytd: { rev:0, bud:0 } };
     return groups[k];
   };
-  const noPssrName = br => "Tanpa PSSR — " + (br || "?");
+  const noPssrName = br => "No PSSR — " + (br || "?");
   const missingMap = new Set();
   let redirected = { n: 0, v: 0 }, missingCol = [];
 
-  // Jendela waktu: periode filter (tabel utama) + MTD & YTD (acuan bulan = tanggal "Sampai" filter, atau hari ini)
+  // Jendela waktu: periode filter (tabel utama) + MTD & YTD (acuan bulan = tanggal "To" filter, atau hari ini)
   const refDate = globalFilters.dateTo || globalFilters.dateFrom || new Date();
   const mtdStart = new Date(refDate.getFullYear(), refDate.getMonth(), 1);
   const mtdEnd = new Date(refDate.getFullYear(), refDate.getMonth() + 1, 0, 23, 59, 59);
@@ -4620,7 +4620,7 @@ async function renderPssrPerformance(){
         if(!recon[rk]) recon[rk] = { co, br: resolveBranch(r.branch), all: 0, other: {}, pssr: 0 };
         const rv = toNum(r.value);
         recon[rk].all += rv;
-        if(ti === undefined){ const tn = String(r.type||"").trim() || "(kosong)"; recon[rk].other[tn] = (recon[rk].other[tn]||0) + rv; }
+        if(ti === undefined){ const tn = String(r.type||"").trim() || "(blank)"; recon[rk].other[tn] = (recon[rk].other[tn]||0) + rv; }
       }
       if(ti === undefined) return;
       const okMtd = r.date instanceof Date && r.date >= mtdStart && r.date <= mtdEnd;
@@ -4699,7 +4699,7 @@ async function renderPssrPerformance(){
     g.ytdAch = g.ytd.bud ? g.ytd.rev / g.ytd.bud * 100 : null;
     return g;
   }).sort((a, z) => (z.ytdAch ?? -1) - (a.ytdAch ?? -1) || z.ytd.rev - a.ytd.rev);
-  const ranked = all.filter(g => g.ach !== null && !/^Tanpa PSSR/.test(g.name)).sort((a, z) => z.ach - a.ach);
+  const ranked = all.filter(g => g.ach !== null && !/^No PSSR/.test(g.name)).sort((a, z) => z.ach - a.ach);
   const unranked = all.filter(g => !ranked.includes(g)).sort((a, z) => z.revenue - a.revenue);
   const totRev = all.reduce((a, g) => a + g.revenue, 0), totBud = all.reduce((a, g) => a + g.bud, 0);
   const totAch = totBud ? Math.round(totRev / totBud * 100) : null;
@@ -4707,9 +4707,9 @@ async function renderPssrPerformance(){
   const brTxt = g => [...g.branches].sort().join(", ");
   const pctTxt = g => g.ach === null ? '<span style="color:var(--ink-soft)">-</span>' : `<strong style="color:${g.ach >= 100 ? "var(--green, #2e9e5b)" : g.ach >= 80 ? "inherit" : "var(--red, #d64545)"}">${Math.round(g.ach)}%</strong>`;
   const periodTxt = (globalFilters.dateFrom || globalFilters.dateTo)
-    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "awal"} s.d. ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "sekarang"}` : "Semua periode";
+    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "awal"} s.d. ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "sekarang"}` : "All periods";
 
-  const head = ["#", "PSSR", "Cabang", ...(showSplit ? ["Revenue IPE", "Revenue IKE"] : []), "Revenue", "Budget", "Achievement", "Selisih", "# Customer", "# Invoice"];
+  const head = ["#", "PSSR", "Branch", ...(showSplit ? ["Revenue IPE", "Revenue IKE"] : []), "Revenue", "Budget", "Achievement", "Variance", "# Customer", "# Invoice"];
   const line = (g, i) => `<tr${i === null ? ' style="color:var(--ink-soft)"' : ""}>
       <td style="text-align:right;color:var(--ink-soft)">${i === null ? "" : i + 1}</td>
       <td>${escapeHtml(g.name)}</td><td>${escapeHtml(brTxt(g))}</td>
@@ -4732,14 +4732,14 @@ async function renderPssrPerformance(){
       <td style="text-align:right">${fmtRpShort(wTot.yr)}</td><td style="text-align:right">${wTot.yb ? fmtRpShort(wTot.yb) : "-"}</td><td style="text-align:right">${achCell(wTot.yb ? wTot.yr / wTot.yb * 100 : null)}</td></tr>`;
   const winHtml = winRows.length ? `<div class="card-shell">
       <div class="card-title">MTD &amp; YTD — ${escapeHtml(mtdLabel)}</div>
-      <div class="card-subtitle">MTD = bulan ${escapeHtml(mtdLabel)}; YTD = Januari s.d. ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "Sampai" di filter; tidak ikut rentang Dari–Sampai). Diurutkan dari Achievement YTD tertinggi. Aturan Revenue, Budget, dan penentuan PSSR sama dengan tabel di bawah. PSSR tanpa Budget tidak ditampilkan${hiddenWin.length ? " (" + hiddenWin.length + " PSSR, YTD " + fmtRpShort(hiddenWin.reduce((a, g) => a + g.ytd.rev, 0)) + " tidak masuk total)" : ""}.</div>
-      <div class="table-scroll"><table class="ast-table"><thead><tr><th>#</th><th>PSSR</th><th>Cabang</th><th style="text-align:right">MTD Revenue</th><th style="text-align:right">MTD Budget</th><th style="text-align:right">MTD Ach.</th><th style="text-align:right">YTD Revenue</th><th style="text-align:right">YTD Budget</th><th style="text-align:right">YTD Ach.</th></tr></thead>
+      <div class="card-subtitle">MTD = bulan ${escapeHtml(mtdLabel)}; YTD = Januari s.d. ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "To" di filter; tidak ikut rentang Dari–To). Diurutkan dari Achievement YTD tertinggi. Aturan Revenue, Budget, dan penentuan PSSR sama dengan tabel di bawah. PSSR tanpa Budget tidak ditampilkan${hiddenWin.length ? " (" + hiddenWin.length + " PSSR, YTD " + fmtRpShort(hiddenWin.reduce((a, g) => a + g.ytd.rev, 0)) + " tidak masuk total)" : ""}.</div>
+      <div class="table-scroll"><table class="ast-table"><thead><tr><th>#</th><th>PSSR</th><th>Branch</th><th style="text-align:right">MTD Revenue</th><th style="text-align:right">MTD Budget</th><th style="text-align:right">MTD Ach.</th><th style="text-align:right">YTD Revenue</th><th style="text-align:right">YTD Budget</th><th style="text-align:right">YTD Ach.</th></tr></thead>
       <tbody>${winRows.map(winLine).join("")}${winTotLine}</tbody></table></div></div>` : "";
   const reconRows = Object.values(recon).filter(x => x.all).sort((a, z) => z.all - a.all);
   const reconHtml = reconRows.length ? `<div class="card-shell">
-      <div class="card-title">Rekonsiliasi Revenue vs Dashboard per Cabang</div>
-      <div class="card-subtitle">Periode: <b>${escapeHtml(periodTxt)}</b>. <b>Revenue Dashboard</b> = semua baris Sales Invoice (semua Type). PSSR Performance hanya menghitung Type ${escapeHtml(TYPES.join(", "))}; Type lain ditampilkan di kolom "Type di luar kategori" (arahkan kursor untuk rincian per Type). Kolom "Cek" harus 0 — kalau bukan 0 berarti ada revenue yang tidak terhitung di PSSR.</div>
-      <div class="table-scroll"><table class="ast-table"><thead><tr><th>Cabang</th><th style="text-align:right">Revenue Dashboard</th><th style="text-align:right">Type di luar kategori</th><th style="text-align:right">Revenue di PSSR Performance</th><th style="text-align:right">Cek</th></tr></thead><tbody>${reconRows.map(x => {
+      <div class="card-title">Revenue Reconciliation vs Dashboard per Branch</div>
+      <div class="card-subtitle">Period: <b>${escapeHtml(periodTxt)}</b>. <b>Revenue Dashboard</b> = semua baris Sales Invoice (semua Type). PSSR Performance hanya menghitung Type ${escapeHtml(TYPES.join(", "))}; Type lain ditampilkan di kolom "Types outside categories" (arahkan kursor untuk rincian per Type). Kolom "Check" harus 0 — kalau bukan 0 berarti ada revenue yang tidak terhitung di PSSR.</div>
+      <div class="table-scroll"><table class="ast-table"><thead><tr><th>Branch</th><th style="text-align:right">Revenue Dashboard</th><th style="text-align:right">Types outside categories</th><th style="text-align:right">Revenue in PSSR Performance</th><th style="text-align:right">Check</th></tr></thead><tbody>${reconRows.map(x => {
         const oth = Object.values(x.other).reduce((a, b) => a + b, 0);
         const tip = Object.entries(x.other).sort((a, b) => b[1] - a[1]).map(([t, v]) => t + ": " + fmtRpShort(v)).join("\n");
         const chk = Math.round(x.all - oth - x.pssr);
@@ -4747,14 +4747,14 @@ async function renderPssrPerformance(){
       }).join("")}</tbody></table></div></div>` : "";
   const notes = [];
   if(hiddenMain.length) notes.push(hiddenMain.length + " PSSR tanpa Budget (mis. sudah resign) tidak ditampilkan dan tidak masuk total — revenue-nya " + fmtRpShort(hiddenMain.reduce((a, g) => a + g.revenue, 0)) + " pada periode ini.");
-  if(missingMap.size) notes.push("Cabang tanpa PSSR default (revenue/budget-nya tampil sebagai \"Tanpa PSSR — cabang\"): <b>" + [...missingMap].sort().join(", ") + "</b>. Tambahkan di PSSR_BRANCH_DEFAULT.");
+  if(missingMap.size) notes.push("Cabang tanpa PSSR default (revenue/budget-nya tampil sebagai \"No PSSR — cabang\"): <b>" + [...missingMap].sort().join(", ") + "</b>. Tambahkan di PSSR_BRANCH_DEFAULT.");
   if(missingCol.length) notes.push("Kolom PSSR tidak ditemukan di Sales Quotation (header: " + escapeHtml(missingCol[0]) + ") — semua revenue IPE dialihkan ke PSSR default cabang.");
   pageBody.innerHTML = `
     <div class="kpi-row">
       ${kpiCard("Total Revenue", fmtRpShort(totRev), periodTxt, "good")}
       ${kpiCard("Total Budget", totBud ? fmtRpShort(totBud) : "-", totBud ? "Budget Cabang = Budget PSSR" : "Budget belum ada pada periode ini", "neutral")}
-      ${kpiCard("Achievement", totAch === null ? "-" : totAch + "%", ranked[0] ? "Teratas: " + ranked[0].name + " (" + Math.round(ranked[0].ach) + "%)" : "", totAch !== null && totAch >= 100 ? "good" : "bad")}
-      ${kpiCard("Dialihkan ke PSSR Cabang", redirected.n.toLocaleString("id-ID") + " invoice", fmtRpShort(redirected.v) + " (IPE tanpa Quotation / No Sales Employee / PSSR resign / PSSR cabang lain)", "neutral")}
+      ${kpiCard("Achievement", totAch === null ? "-" : totAch + "%", ranked[0] ? "Top: " + ranked[0].name + " (" + Math.round(ranked[0].ach) + "%)" : "", totAch !== null && totAch >= 100 ? "good" : "bad")}
+      ${kpiCard("Reassigned to Branch PSSR", redirected.n.toLocaleString("id-ID") + " invoice", fmtRpShort(redirected.v) + " (IPE tanpa Quotation / No Sales Employee / PSSR resign / PSSR cabang lain)", "neutral")}
     </div>
     ${winHtml}
     ${ranked.length ? chartCardShell("chart-pssr-ach", "Revenue vs Budget per PSSR", "Diurutkan dari Achievement tertinggi — label % di atas batang") : ""}
@@ -4763,7 +4763,7 @@ async function renderPssrPerformance(){
         <div class="card-title">PSSR Performance — Revenue vs Budget</div>
         <button class="btn" id="pssr-export" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel</button>
       </div>
-      <div class="card-subtitle">Periode: <b>${escapeHtml(periodTxt)}</b>. Peringkat berdasarkan Achievement (Revenue ÷ Budget). Revenue = Invoice Type ${escapeHtml(TYPES.join(", "))}; Budget memakai kategori yang sama. Budget Cabang = Budget PSSR. Invoice IPE tanpa Quotation / "No Sales Employee" masuk ke PSSR cabangnya; invoice IKE masuk ke PSSR IKE cabangnya. Sales IKE yang membantu IPE (Ihsan di SPT → New Vacant; Ilham di BJM → Muhammad Jamruni) sudah disesuaikan. PSSR tanpa Budget ditampilkan di bawah tanpa peringkat.</div>
+      <div class="card-subtitle">Period: <b>${escapeHtml(periodTxt)}</b>. Peringkat berdasarkan Achievement (Revenue ÷ Budget). Revenue = Invoice Type ${escapeHtml(TYPES.join(", "))}; Budget memakai kategori yang sama. Budget Cabang = Budget PSSR. Invoice IPE tanpa Quotation / "No Sales Employee" masuk ke PSSR cabangnya; invoice IKE masuk ke PSSR IKE cabangnya. Sales IKE yang membantu IPE (Ihsan di SPT → New Vacant; Ilham di BJM → Muhammad Jamruni) sudah disesuaikan. PSSR tanpa Budget ditampilkan di bawah tanpa peringkat.</div>
       ${notes.map(n => `<div class="empty-note" style="margin-bottom:8px;">${n}</div>`).join("")}
       ${all.length
         ? `<div class="table-scroll"><table class="ast-table"><thead><tr>${head.map((h, i) => `<th${i >= 3 ? ' style="text-align:right"' : ''}>${escapeHtml(h)}</th>`).join("")}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`
@@ -4773,7 +4773,7 @@ async function renderPssrPerformance(){
   if(ranked.length) drawAchievementBar("chart-pssr-ach", ranked.map(g => g.name), ranked.map(g => Math.round(g.revenue)), ranked.map(g => Math.round(g.bud)));
   const btn = document.getElementById("pssr-export");
   if(btn) btn.addEventListener("click", () => {
-    const out = [["#", "PSSR", "Cabang", "Revenue IPE", "Revenue IKE", "Revenue", "Budget", "Achievement %", "Selisih", ...TYPES, "# Customer", "# Invoice", "MTD Revenue", "MTD Budget", "MTD Ach %", "YTD Revenue", "YTD Budget", "YTD Ach %"]];
+    const out = [["#", "PSSR", "Branch", "Revenue IPE", "Revenue IKE", "Revenue", "Budget", "Achievement %", "Variance", ...TYPES, "# Customer", "# Invoice", "MTD Revenue", "MTD Budget", "MTD Ach %", "YTD Revenue", "YTD Budget", "YTD Ach %"]];
     const add = (g, i) => out.push([i === null ? "" : i + 1, g.name, brTxt(g), Math.round(g.rev.IPE), Math.round(g.rev.IKE), Math.round(g.revenue), Math.round(g.bud), g.ach === null ? "" : Math.round(g.ach), g.bud ? Math.round(g.revenue - g.bud) : "", ...g.vals.map(v => Math.round(v)), g.custs.size, g.invs.size, Math.round(g.mtd.rev), Math.round(g.mtd.bud), g.mtd.bud ? Math.round(g.mtd.rev / g.mtd.bud * 100) : "", Math.round(g.ytd.rev), Math.round(g.ytd.bud), g.ytd.bud ? Math.round(g.ytd.rev / g.ytd.bud * 100) : ""]);
     ranked.forEach((g, i) => add(g, i)); unranked.forEach(g => add(g, null));
     ctDownloadExcel("PSSR_Performance_" + new Date().toISOString().slice(0,10) + ".xlsx", "PSSR Performance", out);
@@ -4806,7 +4806,7 @@ async function renderOtherIncome(){
   const fk = globalFilters.dateFrom ? periodKey(globalFilters.dateFrom) : null;
   const tk = globalFilters.dateTo ? periodKey(globalFilters.dateTo) : null;
   const periodTxt = (globalFilters.dateFrom || globalFilters.dateTo)
-    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "awal"} s.d. ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "sekarang"}` : "Semua periode";
+    ? `${globalFilters.dateFrom ? fmtDate(globalFilters.dateFrom) : "awal"} s.d. ${globalFilters.dateTo ? fmtDate(globalFilters.dateTo) : "sekarang"}` : "All periods";
   const yearMonths = []; for(let m = 0; m <= refDate.getMonth(); m++) yearMonths.push(`${refDate.getFullYear()}-${String(m+1).padStart(2,"0")}`);
 
   const lines = {}; // "Sumber|Curr" -> { source, curr, per, mtd, ytd, monthly{pk} }
@@ -4883,7 +4883,7 @@ async function renderOtherIncome(){
           if(iS >= 0 && !/^approved$/i.test(String(r[iS]||"").trim())) return;
           const v = toNum(r[iA]); if(!v) return;
           const pk = toPk(r[iM]); if(!pk) return;
-          claims.push({ pk, prog: String(r[iP]||"").trim() || "(tanpa program)", curr: String(r[iC]||"").trim().toUpperCase() || "?", amt: v, jc: 0, mach: 0 });
+          claims.push({ pk, prog: String(r[iP]||"").trim() || "(no program)", curr: String(r[iC]||"").trim().toUpperCase() || "?", amt: v, jc: 0, mach: 0 });
         });
       }
       claims.forEach(cl => {
@@ -4912,18 +4912,18 @@ async function renderOtherIncome(){
   pageBody.innerHTML = `
     <div class="kpi-row">
       ${kpis || kpiCard("Other Income", "-", "Belum ada data pada periode ini", "neutral")}
-      ${kpiCard("Bundling Unit", "Segera", "Menunggu struktur data", "neutral")}
+      ${kpiCard("Bundling Unit", "Coming Soon", "Menunggu struktur data", "neutral")}
     </div>
     <div class="card-shell">
-      <div class="card-title">Ringkasan per Sumber &amp; Mata Uang</div>
-      <div class="card-subtitle">Periode filter: <b>${escapeHtml(periodTxt)}</b>. MTD = ${escapeHtml(mtdLabel)}; YTD = Januari s.d. ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "Sampai"). Nilai ditampilkan dalam <b>mata uang asal</b> dan <b>belum dikonversi ke Rupiah</b>, sehingga tidak dijumlahkan antar mata uang.${isAdmin ? "" : " Program Rebate hanya terlihat oleh Admin."}</div>
+      <div class="card-title">Summary per Source &amp; Currency</div>
+      <div class="card-subtitle">Periode filter: <b>${escapeHtml(periodTxt)}</b>. MTD = ${escapeHtml(mtdLabel)}; YTD = Januari s.d. ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "To"). Nilai ditampilkan dalam <b>mata uang asal</b> dan <b>belum dikonversi ke Rupiah</b>, sehingga tidak dijumlahkan antar mata uang.${isAdmin ? "" : " Program Rebate hanya terlihat oleh Admin."}</div>
       ${rebateNote ? `<div class="empty-note" style="margin-bottom:8px;">${rebateNote}</div>` : ""}
-      ${all.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr><th>Sumber</th><th>Curr</th><th style="text-align:right">Periode Filter</th><th style="text-align:right">MTD</th><th style="text-align:right">YTD</th></tr></thead><tbody>${all.map(rowHtml).join("")}</tbody></table></div>` : `<div class="empty-note">Belum ada data.</div>`}
+      ${all.length ? `<div class="table-scroll"><table class="ast-table"><thead><tr><th>Source</th><th>Curr</th><th style="text-align:right">Filter Period</th><th style="text-align:right">MTD</th><th style="text-align:right">YTD</th></tr></thead><tbody>${all.map(rowHtml).join("")}</tbody></table></div>` : `<div class="empty-note">Belum ada data.</div>`}
     </div>
-    ${all.length ? `<div class="card-shell"><div class="card-title">Per Bulan — ${refDate.getFullYear()}</div><div class="table-scroll"><table class="ast-table"><thead><tr><th>Sumber</th>${monthHead}<th style="text-align:right">YTD</th></tr></thead><tbody>${monthRows}</tbody></table></div></div>` : ""}
-    ${warBrRows.length ? `<div class="card-shell"><div class="card-title">Warranty Approved per Cabang (periode filter)</div><div class="table-scroll"><table class="ast-table"><thead><tr><th>Cabang</th><th>Curr</th><th style="text-align:right">Approved</th></tr></thead><tbody>${warBrRows.map(x => `<tr><td>${escapeHtml(x.b)}</td><td>${escapeHtml(x.c)}</td><td style="text-align:right">${fmtMoneyCur(x.v, x.c)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+    ${all.length ? `<div class="card-shell"><div class="card-title">Per Month — ${refDate.getFullYear()}</div><div class="table-scroll"><table class="ast-table"><thead><tr><th>Source</th>${monthHead}<th style="text-align:right">YTD</th></tr></thead><tbody>${monthRows}</tbody></table></div></div>` : ""}
+    ${warBrRows.length ? `<div class="card-shell"><div class="card-title">Warranty Approved per Branch (filter period)</div><div class="table-scroll"><table class="ast-table"><thead><tr><th>Branch</th><th>Curr</th><th style="text-align:right">Approved</th></tr></thead><tbody>${warBrRows.map(x => `<tr><td>${escapeHtml(x.b)}</td><td>${escapeHtml(x.c)}</td><td style="text-align:right">${fmtMoneyCur(x.v, x.c)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
     ${rebRows.length ? `<div class="card-shell"><div class="card-title">Rebate Program per Program Type — ${refDate.getFullYear()}</div><div class="card-subtitle">Per bulan sampai ${escapeHtml(FULL_MONTH_NAMES_ID[refDate.getMonth()])} ${refDate.getFullYear()} (bulan acuan mengikuti tanggal "Sampai"), mata uang asal, hanya Status Approved.</div><div class="table-scroll"><table class="ast-table"><thead><tr><th>Program</th><th>Curr</th>${monthHead}<th style="text-align:right">YTD</th></tr></thead><tbody>${rebRows.map(x => `<tr><td>${escapeHtml(x.prog)}</td><td>${escapeHtml(x.curr)}</td>${yearMonths.map(pk => `<td style="text-align:right">${x.monthly[pk] ? fmtMoneyCur(x.monthly[pk], x.curr) : '<span style="color:var(--ink-soft)">-</span>'}</td>`).join("")}<td style="text-align:right"><strong>${fmtMoneyCur(x.ytd, x.curr)}</strong></td></tr>`).join("")}${[...new Set(rebRows.map(x => x.curr))].map(c => { const rs2 = rebRows.filter(x => x.curr === c); return `<tr style="border-top:2px solid var(--line);font-weight:700;"><td>Total</td><td>${escapeHtml(c)}</td>${yearMonths.map(pk => { const t = rs2.reduce((a, x) => a + (x.monthly[pk]||0), 0); return `<td style="text-align:right">${t ? fmtMoneyCur(t, c) : "-"}</td>`; }).join("")}<td style="text-align:right">${fmtMoneyCur(rs2.reduce((a, x) => a + x.ytd, 0), c)}</td></tr>`; }).join("")}</tbody></table></div></div>` : ""}
-    ${rebRows.some(x => x.jc) ? `<div class="card-shell"><div class="card-title">Rebate vs Job Card Value per Program — YTD</div><div class="card-subtitle">Job Card Value dan jumlah mesin diambil dari tab Rebate Program (satu baris = satu klaim). Rebate % = Rebate ÷ Job Card Value.</div><div class="table-scroll"><table class="ast-table"><thead><tr><th>Program</th><th>Curr</th><th style="text-align:right"># Klaim</th><th style="text-align:right"># Mesin</th><th style="text-align:right">Job Card Value</th><th style="text-align:right">Rebate</th><th style="text-align:right">Rebate %</th></tr></thead><tbody>${rebRows.filter(x => x.claims).map(x => `<tr><td>${escapeHtml(x.prog)}</td><td>${escapeHtml(x.curr)}</td><td style="text-align:right">${x.claims.toLocaleString("id-ID")}</td><td style="text-align:right">${x.mach.toLocaleString("id-ID")}</td><td style="text-align:right">${fmtMoneyCur(x.jc, x.curr)}</td><td style="text-align:right"><strong>${fmtMoneyCur(x.ytd, x.curr)}</strong></td><td style="text-align:right">${x.jc ? (x.ytd / x.jc * 100).toFixed(1) + "%" : "-"}</td></tr>`).join("")}${[...new Set(rebRows.filter(x => x.claims).map(x => x.curr))].map(c => { const r2 = rebRows.filter(x => x.claims && x.curr === c); const j = r2.reduce((a, x) => a + x.jc, 0), y = r2.reduce((a, x) => a + x.ytd, 0); return `<tr style="border-top:2px solid var(--line);font-weight:700;"><td>Total</td><td>${escapeHtml(c)}</td><td style="text-align:right">${r2.reduce((a, x) => a + x.claims, 0).toLocaleString("id-ID")}</td><td style="text-align:right">${r2.reduce((a, x) => a + x.mach, 0).toLocaleString("id-ID")}</td><td style="text-align:right">${fmtMoneyCur(j, c)}</td><td style="text-align:right">${fmtMoneyCur(y, c)}</td><td style="text-align:right">${j ? (y / j * 100).toFixed(1) + "%" : "-"}</td></tr>`; }).join("")}</tbody></table></div></div>` : ""}`;
+    ${rebRows.some(x => x.jc) ? `<div class="card-shell"><div class="card-title">Rebate vs Job Card Value per Program — YTD</div><div class="card-subtitle">Job Card Value dan jumlah mesin diambil dari tab Rebate Program (satu baris = satu klaim). Rebate % = Rebate ÷ Job Card Value.</div><div class="table-scroll"><table class="ast-table"><thead><tr><th>Program</th><th>Curr</th><th style="text-align:right"># Claims</th><th style="text-align:right"># Machines</th><th style="text-align:right">Job Card Value</th><th style="text-align:right">Rebate</th><th style="text-align:right">Rebate %</th></tr></thead><tbody>${rebRows.filter(x => x.claims).map(x => `<tr><td>${escapeHtml(x.prog)}</td><td>${escapeHtml(x.curr)}</td><td style="text-align:right">${x.claims.toLocaleString("id-ID")}</td><td style="text-align:right">${x.mach.toLocaleString("id-ID")}</td><td style="text-align:right">${fmtMoneyCur(x.jc, x.curr)}</td><td style="text-align:right"><strong>${fmtMoneyCur(x.ytd, x.curr)}</strong></td><td style="text-align:right">${x.jc ? (x.ytd / x.jc * 100).toFixed(1) + "%" : "-"}</td></tr>`).join("")}${[...new Set(rebRows.filter(x => x.claims).map(x => x.curr))].map(c => { const r2 = rebRows.filter(x => x.claims && x.curr === c); const j = r2.reduce((a, x) => a + x.jc, 0), y = r2.reduce((a, x) => a + x.ytd, 0); return `<tr style="border-top:2px solid var(--line);font-weight:700;"><td>Total</td><td>${escapeHtml(c)}</td><td style="text-align:right">${r2.reduce((a, x) => a + x.claims, 0).toLocaleString("id-ID")}</td><td style="text-align:right">${r2.reduce((a, x) => a + x.mach, 0).toLocaleString("id-ID")}</td><td style="text-align:right">${fmtMoneyCur(j, c)}</td><td style="text-align:right">${fmtMoneyCur(y, c)}</td><td style="text-align:right">${j ? (y / j * 100).toFixed(1) + "%" : "-"}</td></tr>`; }).join("")}</tbody></table></div></div>` : ""}`;
 }
 
 const PAGE_RENDERERS = {
@@ -4974,7 +4974,7 @@ function hideLoginScreen(){
 function applySessionToProfile(session){
   document.getElementById("profile-avatar").textContent = (session.name || session.username || "?").charAt(0).toUpperCase();
   document.getElementById("profile-name").textContent = session.name || session.username;
-  document.getElementById("profile-role").textContent = session.role === "Admin" ? "Admin (semua cabang)" : ("Cabang " + session.branch);
+  document.getElementById("profile-role").textContent = session.role === "Admin" ? "Admin (all branches)" : ("Branch " + session.branch);
 }
 
 document.getElementById("login-form").addEventListener("submit", async (e) => {
@@ -4991,7 +4991,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
   }catch(err){
     showLoginScreen(err.message || "Login gagal");
   }finally{
-    btn.disabled = false; btn.textContent = "Masuk";
+    btn.disabled = false; btn.textContent = "Sign In";
   }
 });
 
