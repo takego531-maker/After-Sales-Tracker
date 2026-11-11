@@ -328,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-09-03"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-11-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -2442,8 +2442,8 @@ async function renderInventoryProfile(){
     <div class="charts-row">
       ${chartCardShell("chart-profile-trend", "Value Trend per Category — per Month")}
     </div>
-    ${tableHtml("Highest-Value Dead Stock (" + latestLabel + ")", ["Part No","Description","Branch","Stock","Value"],
-      topDead.map(r=>[escapeHtml(r.partNo), escapeHtml(r.desc), escapeHtml(r.branch), toNum(r.inStock), fmtRp(toNum(r.totalValue))]))}
+    ${tableHtml("Highest-Value Dead Stock (" + latestLabel + ")", ["Part No","Description","Model","Branch","Stock","Value"],
+      topDead.map(r=>[escapeHtml(r.partNo), escapeHtml(r.desc), escapeHtml(String(r.model==null?"":r.model).trim() || "-"), escapeHtml(r.branch), toNum(r.inStock), fmtRp(toNum(r.totalValue))]))}
     <div class="empty-note">Catatan: KPI, chart kategori, breakdown per cabang, dan tabel Dead Stock di atas hanya untuk bulan terbaru (tidak dijumlah dari semua bulan). Filter Tanggal tidak berlaku di halaman ini — gunakan chart tren untuk melihat pergerakan antar bulan.</div>
   `;
   drawPie("chart-profile-value", catOrder, catOrder.map(c=>valueByCategory[c]||0), catOrder.map(c=>CAT_COLORS[c]));
