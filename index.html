@@ -328,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-11-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-11-02"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -2377,6 +2377,8 @@ async function renderInventoryProfile(){
   const allCats = ["DEAD STOCK","SLOW","MEDIUM","FAST"];
   const catOrder = allCats.filter(c => countByCategory[c] !== undefined);
   const topDead = topN(rowsLatest.filter(r=>r.category==="DEAD STOCK"), r=>toNum(r.totalValue), 8);
+  // Semua Dead Stock bulan terbaru (ikut filter Company/Branch), urut Value terbesar — untuk Export Excel
+  const allDead = rowsLatest.filter(r=>r.category==="DEAD STOCK").sort((a,b)=>toNum(b.totalValue)-toNum(a.totalValue));
 
   // Jumlah Part No per Model (top 8 + Lainnya)
   const countByModel = groupCount(rowsLatest.filter(r=>r.model), r=>r.model);
@@ -2442,10 +2444,29 @@ async function renderInventoryProfile(){
     <div class="charts-row">
       ${chartCardShell("chart-profile-trend", "Value Trend per Category — per Month")}
     </div>
-    ${tableHtml("Highest-Value Dead Stock (" + latestLabel + ")", ["Part No","Description","Model","Branch","Stock","Value"],
-      topDead.map(r=>[escapeHtml(r.partNo), escapeHtml(r.desc), escapeHtml(String(r.model==null?"":r.model).trim() || "-"), escapeHtml(r.branch), toNum(r.inStock), fmtRp(toNum(r.totalValue))]))}
+    ${(() => {
+      const deadTitle = "Highest-Value Dead Stock (" + latestLabel + ")";
+      const html = tableHtml(deadTitle, ["Part No","Description","Model","Branch","Stock","Value"],
+        topDead.map(r=>[escapeHtml(r.partNo), escapeHtml(r.desc), escapeHtml(String(r.model==null?"":r.model).trim() || "-"), escapeHtml(r.branch), toNum(r.inStock), fmtRp(toNum(r.totalValue))]));
+      if(!allDead.length) return html;
+      const head = `<div class="card-title-row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
+        <div class="card-title" style="margin:0;">${escapeHtml(deadTitle)}</div>
+        <button class="btn" id="profile-export-dead" style="padding:6px 12px;font-size:12px;">⬇️ Export Excel — All Dead Stock (${allDead.length.toLocaleString("id-ID")} rows)</button>
+      </div>`;
+      return html.replace('<div class="card-title">' + escapeHtml(deadTitle) + '</div>', () => head);
+    })()}
     <div class="empty-note">Catatan: KPI, chart kategori, breakdown per cabang, dan tabel Dead Stock di atas hanya untuk bulan terbaru (tidak dijumlah dari semua bulan). Filter Tanggal tidak berlaku di halaman ini — gunakan chart tren untuk melihat pergerakan antar bulan.</div>
   `;
+  const exportDeadBtn = document.getElementById("profile-export-dead");
+  if(exportDeadBtn) exportDeadBtn.addEventListener("click", () => {
+    const fd = d => (d instanceof Date && !isNaN(d.getTime())) ? fmtDate(d) : (d ? String(d) : "");
+    const rowsX = [["Branch","Part No","Description","Model","In Stock","Roll Out 12m","Last GR","Last GI","Aging by GR","Aging by GI","Price per Qty","Total Value","Period"]];
+    allDead.forEach(r => rowsX.push([r.branch, r.partNo, r.desc, String(r.model==null?"":r.model).trim(), toNum(r.inStock), toNum(r.rollOut12m),
+      fd(r.lastGrDate), fd(r.lastGiDate), r.agingByGr==null||r.agingByGr===""?"":toNum(r.agingByGr), r.agingByGi==null||r.agingByGi===""?"":toNum(r.agingByGi),
+      toNum(r.pricePerQty), toNum(r.totalValue), latestLabel]));
+    rowsX.push(["TOTAL","","","", allDead.reduce((a,r)=>a+toNum(r.inStock),0),"","","","","","", allDead.reduce((a,r)=>a+toNum(r.totalValue),0), ""]);
+    ctDownloadExcel("Dead_Stock_Parts_" + currentCompany + "_" + latestLabel.replace(/\s+/g,"-") + ".xlsx", "Dead Stock", rowsX);
+  });
   drawPie("chart-profile-value", catOrder, catOrder.map(c=>valueByCategory[c]||0), catOrder.map(c=>CAT_COLORS[c]));
   drawPie("chart-profile-count", modelLabels, modelCounts);
   drawBar("chart-profile-branch", branches, allCats.map(cat => ({
