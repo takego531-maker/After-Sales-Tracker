@@ -328,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-11-02"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-12-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -597,7 +597,7 @@ async function fetchSheet(key, force=false){
   return data;
 }
 
-function clearCache(){ Object.keys(sheetCache).forEach(k => delete sheetCache[k]); }
+function clearCache(){ Object.keys(sheetCache).forEach(k => delete sheetCache[k]); if(typeof partGroupOverrides!=="undefined") partGroupOverrides = null; }
 
 /* ============================================================== *
  *  Small utilities                                                *
@@ -2347,8 +2347,58 @@ function parseFullMonthPeriod(monthText, yearText){
   return `${yearText}-${String(idx+1).padStart(2,"0")}`;
 }
 
+/* ============================================================== *
+ *  PART GROUP — pengelompokan Part berdasarkan Description          *
+ *  Aturan keyword (urutan = prioritas, cocok pertama menang).       *
+ *  Koreksi per Part No: tab "Part Group Mapping" di Google Sheet     *
+ *  (kolom A = Part No, kolom B = Part Group) — mengalahkan aturan.  *
+ * ============================================================== */
+const PART_GROUP_RULES = [
+  ["Tyre", "\\bBAN (LUAR|DALAM)\\b|\\bTY?RES?\\b|\\bTIRES?\\b|\\b\\d{3,4}\\s?R\\s?\\d{2}\\b|HANKOOK|BRIDGESTONE|MICHELIN|\\bINNER TUBE\\b|\\bFLAP\\b"],
+  ["Rim & Wheel", "\\bRIM\\b|\\bWHEELS?\\b(?!\\s*(NUT|STUD|HUB|BOLT|BRAKE|CYL|MOTOR))"],
+  ["Battery", "\\bBATTER(Y|IES)\\b|\\bAKI\\b"],
+  ["Filter", "\\bELMNT\\b|\\bELEM\\b|SEPRATOR|SEPARATR|\\bRECEIVER\\b|\\bDRIER\\b|\\bDRYER\\b|\\bFLTR\\b|\\bFLT\\b|\\bPM[- ]?KIT\\b|\\d+\\s?HRS?\\b.*KIT|AIR PURIFIER|AIR CLANER|STRAINNER|SEPERATOR|FILTER|\\bELEMENT\\b(?!.*(HEAT|HEATING))|STRAINER|\\bBREATHER\\b|AIR CLEANER|\\bSEPARATOR\\b|SERVICE KIT|\\bCARTRIDGE\\b"],
+  ["Seal Kit", "\\bSEAL KT\\b|\\bO/RING\\b|SEAL\\s?KIT|SEALING\\s?KIT|REPAIR\\s?KIT|GASKET\\s?(KIT|SET)|O\\s?[- ]?RINGS?\\b|\\bSEALS?\\b|SEALING|GASKET|\\bGSKT\\b|\\bORING\\b|OIL\\s?SEAL|DUST\\s?SEAL|WIPER SEAL|\\bPACKING\\b"],
+  ["Hose", "\\bHSE\\b|\\bHOSES?\\b|\\bPIPES?\\b|\\bADAPT[OE]R\\b|\\bCOUPLING\\b|\\bNIPPLE\\b|\\bFITTING\\b|\\bUNION\\b|\\bBANJO\\b|\\bELBOW\\b|\\bTEE\\b|BSP|\\bTUBE\\b|WORMDRIVE|HOSE CLAMP"],
+  ["Undercarriage", "ROLLER ASSEMBLY|\\bCHAIN\\b|\\bIDLER\\b|\\bSPROCKET\\b|\\bTRACK (SHOE|LINK|PAD|ROLLER|GROUP|CHAIN|TENSIONER|ADJUSTER)|\\bCARRIER ROLLER\\b|\\bTRACK ROLLER\\b|\\bBOTTOM ROLLER\\b|\\bSHOE\\b"],
+  ["Bucket & Cutting Parts", "\\bSHOVEL\\b|\\bCRANE HOOK\\b|\\bKINGPOST\\b|\\bBOOM TEC\\b|SIDE CUTTER|\\bTOOTH\\b|\\bTEETH\\b|CUTTING EDGE|\\bBLADE\\b|\\bBUCKET\\b|\\bBOLT ON\\b.*EDGE|WEAR (PLATE|STRIP|PAD)|\\bTOOTH ?ADAPTER\\b|\\bPOINT\\b"],
+  ["Bearing, Bush & Pin", "B/RING|\\bB/RG\\b|\\bBRNG\\b|\\bBRG\\b|NEEDLE B|BEARIN\\b|BEARIN|\\bBRG\\b|CYLINDRICAL ROLLER|NEEDLE ROLL|STEEL BALL|\\bBALL BEARING|\\bBEARINGS?\\b|\\bBUSH(ES|ING|INGS)?\\b|\\bPINS?\\b|\\bSPHERICAL\\b|NEEDLE ROLLER|THRUST (BEARING|RING)|\\bPIVOT\\b"],
+  ["Electrical", "BLOWER HEATER|CAPACITOR|\\bSWTCH\\b|\\bSNSR\\b|\\bALTERNATR\\b|E C U|TRANSDUCER|LIVELINK|\\bDECU\\b|\\bTELEMATIC|\\bMONITOR\\b|\\bDISPLAY\\b|\\bSWITCH\\b|\\bFUSE\\b|\\bRELAY\\b|\\bSENS[OE]R\\b|HARNESS|\\bCABLE\\b|ALTERNATOR|STARTER|S[OE]LENOID|\\bLAMP\\b|\\bLIGHT\\b|\\bBULB\\b|\\bHORN\\b|CONNECTOR|\\bLED\\b|\\bGAUGE\\b|\\bSENDER\\b|\\bWIRING\\b|\\b(12|24)\\s?V\\b|\\bBUZZER\\b|\\bTERMINAL\\b|\\bECU\\b|\\bCONTROLLER\\b|\\bWIPER MOTOR\\b|\\bACTUATOR\\b|\\bIGNITION\\b|\\bRADIO\\b|\\bBEACON\\b|\\bFLASHER\\b"],
+  ["Engine Parts", "FUEL RAIL|COOLING PACK|\\bCOOLING\\b|\\bCONDENSER\\b|DIESELMAX|\\bPRIMER\\b|\\bPISTON\\b|\\bLINER\\b|INJECTOR|TURBO|WATER PUMP|FUEL (LIFT )?PUMP|OIL PUMP|THERMOSTAT|\\bBELT\\b|\\bFAN\\b|ROCKER|CYLINDER HEAD|CRANKSHAFT|CAMSHAFT|TAPPET|MANIFOLD|\\bENGINE\\b|RADIATOR|\\bEXHAUST\\b|\\bCOOLER\\b|\\bVALVE (GUIDE|SEAT|SPRING|COVER)\\b|\\bTENSIONER\\b|\\bFLYWHEEL\\b|\\bCONROD\\b|CON ROD|\\bSUMP\\b|DIPSTICK|\\bTHROTTLE\\b|\\bSILENCER\\b|\\bMUFFLER\\b"],
+  ["Transmission & Drivetrain", "KIT[- ]PRESS PLATE|PRESSURE PLATE|FRICTION PLATE|TRUNNION|\\bSELECTOR\\b|\\bBAULK\\b|PARK ?BRAKE|\\bCASING\\b|DRIVESHAFT|\\bUJ KIT|KIT[- ]SPIDER|SPIDER|TORQUE CONVERT|\\bGEARS?\\b|\\bCLUTCH\\b|\\bAXLE\\b|\\bSHAFT\\b|PROP ?SHAFT|DIFFERENTIAL|TRANSMISSION|\\bBRAKE\\b|\\bPLANET|\\bHUB\\b|\\bCOUPLER\\b|\\bTORQUE CONVERTER\\b|\\bPTO\\b|\\bSYNCHRO|\\bSPLINE|\\bUNIVERSAL JOINT\\b|\\bCARDAN\\b|\\bRING GEAR\\b|\\bPINION\\b|\\bSTEERING\\b|\\bWHEEL (NUT|STUD|RIM|HUB)"],
+  ["Hydraulic", "HYDRAULIC|\\bPUMP\\b|\\bVALVE\\b|\\bCYLINDER\\b|\\bRAM\\b|\\bSPOOL\\b|ACCUMULATOR|\\bMOTOR\\b|\\bRAM\\b|\\bGA\\b|\\bRELIEF\\b|\\bPOPPET\\b|\\bSWIVEL\\b|\\bROTARY\\b|\\bPILOT\\b|\\bTANK\\b|\\bRESERVOIR\\b|\\bPLUNGER\\b|\\bROD\\b"],
+  ["Lubricants & Chemicals", "\\bOLI\\b|\\bSAE\\s?\\d+W?-?\\d*|\\bISO VG\\b|\\bTOI\\b|GREASE|\\bOIL\\b(?!.*(SEAL|BAFFLE|PUMP|COOLER|FILTER))|LOCTITE|SEALANT|AZOLLA|COOLANT|ADHESIVE|\\bPAINT\\b|\\bCLEANER\\b|\\bLUBRICANT|\\bSPRAY\\b|\\bPENETRATIVE\\b|\\bDEGREASER\\b"],
+  ["Body & Cab", "MIRROR|DECAL|STICKER|GLASS|\\bDOOR\\b|\\bSEAT\\b|SCREEN|\\bPANEL\\b|\\bBONNET\\b|FENDER|\\bGRILLE?\\b|\\bWIPER\\b|\\bCAB\\b|\\bHANDLE\\b|\\bGAS STRUT|\\bKNOB\\b|\\bLEVER\\b|\\bSTEP\\b"],
+  ["Fasteners & Hardware", "\\bBOLTS?\\b|SCREW|\\bNUTS?\\b|LOCKNUT|\\bWASHERS?\\b|\\bSTUD\\b|\\bRIVET|CIRCLIP|\\bSHIM\\b|\\bSPACER\\b|\\bDOWEL\\b|\\bSLEEVE\\b|\\bPLUG\\b|\\bCAP\\b|\\bCLIPS?\\b|\\bCLAMP\\b|\\bSPRING\\b|\\bRETAINER\\b|\\bGROMMET\\b|\\bOLIVE\\b|\\bKEY\\b|\\bBRACKET\\b|\\bPLATE\\b|\\bPLT\\b|\\bFLANGE\\b|\\bLINK\\b|\\bMOUNT(ING)?\\b|\\bMTG\\b|\\bBAFFLE\\b|\\bCOTTER\\b|\\bSNAP RING\\b"]
+].map(([g,p]) => [g, new RegExp(p)]);
+const PART_GROUP_OTHER = "Other";
+const PART_GROUP_ORDER = PART_GROUP_RULES.map(r=>r[0]).concat([PART_GROUP_OTHER]);
+let partGroupOverrides = null; // { PARTNO_UPPER: "Group" }
+async function loadPartGroupOverrides(){
+  if(partGroupOverrides) return partGroupOverrides;
+  const map = {};
+  try{
+    const raw = await fetchSheetRaw("Part Group Mapping");
+    raw.rows.forEach(r => {
+      const pn = String(r[0]==null?"":r[0]).trim().toUpperCase(), g = String(r[1]==null?"":r[1]).trim();
+      if(pn && g) map[pn] = g;
+    });
+  }catch(e){ /* tab belum dibuat -> pakai aturan keyword saja */ }
+  partGroupOverrides = map;
+  return map;
+}
+function partGroupOf(partNo, desc){
+  const ov = partGroupOverrides && partGroupOverrides[String(partNo==null?"":partNo).trim().toUpperCase()];
+  if(ov) return ov;
+  const d = String(desc==null?"":desc).toUpperCase();
+  for(const [g, rx] of PART_GROUP_RULES){ if(rx.test(d)) return g; }
+  return PART_GROUP_OTHER;
+}
+let profilePartGroup = ""; // filter Part Group di halaman Inventory Profile ("" = semua)
+
 async function renderInventoryProfile(){
   const s = await fetchSheet("invProfile");
+  await loadPartGroupOverrides();
   let rows = rowsToObjects(s, {
     branch:0, partNo:1, desc:2, model:3, inStock:4, rollOut12m:5,
     lastGrDate:6, lastGiDate:7, agingByGr:9, agingByGi:10, category:11,
@@ -2357,12 +2407,23 @@ async function renderInventoryProfile(){
   rows = rows.filter(r => r.partNo); // buang baris sisa formula/validasi (kosong tapi kebaca "ada isi")
   if(currentCompany === "IKE" && rows.length === 0){ pageBody.innerHTML = noIkeDataBanner("Inventory Profile"); return; }
   rows = applyFilters(rows, null, "branch");
-  rows.forEach(r => { r.period = parseFullMonthPeriod(r.month, r.year); });
+  rows.forEach(r => { r.period = parseFullMonthPeriod(r.month, r.year); r.partGroup = partGroupOf(r.partNo, r.desc); });
 
   const allPeriods = Array.from(new Set(rows.map(r=>r.period).filter(Boolean))).sort();
   const latestPeriod = allPeriods[allPeriods.length - 1];
   const latestLabel = latestPeriod ? (FULL_MONTHS[Number(latestPeriod.split("-")[1])-1] + " " + latestPeriod.split("-")[0]) : "-";
-  const rowsLatest = latestPeriod ? rows.filter(r => r.period === latestPeriod) : rows;
+  const rowsLatestAllGroups = latestPeriod ? rows.filter(r => r.period === latestPeriod) : rows;
+  // Ringkasan per Part Group (selalu semua group, supaya perbandingan antar group tetap terlihat)
+  const pgStats = PART_GROUP_ORDER.map(g => {
+    const rs = rowsLatestAllGroups.filter(r => r.partGroup === g);
+    const val = rs.reduce((a,r)=>a+toNum(r.totalValue),0);
+    const dead = rs.filter(r=>r.category==="DEAD STOCK").reduce((a,r)=>a+toNum(r.totalValue),0);
+    return { g, n: rs.length, val, dead };
+  }).filter(x => x.n > 0).sort((a,b)=>b.val-a.val);
+  const pgTotalVal = pgStats.reduce((a,x)=>a+x.val,0);
+  if(profilePartGroup && !pgStats.some(x=>x.g===profilePartGroup)) profilePartGroup = "";
+  if(profilePartGroup) rows = rows.filter(r => r.partGroup === profilePartGroup);
+  const rowsLatest = profilePartGroup ? rowsLatestAllGroups.filter(r => r.partGroup === profilePartGroup) : rowsLatestAllGroups;
 
   const totalSkus = rowsLatest.length;
   const totalValue = rowsLatest.reduce((a,r)=>a+toNum(r.totalValue),0);
@@ -2409,7 +2470,12 @@ async function renderInventoryProfile(){
   });
 
   pageBody.innerHTML = `
-    <div class="empty-note" style="margin-bottom:12px;">Menampilkan snapshot bulan terbaru: <strong>${escapeHtml(latestLabel)}</strong> (${allPeriods.length} bulan histori tersedia untuk tren di bawah).</div>
+    <div class="empty-note" style="margin-bottom:12px;">Menampilkan snapshot bulan terbaru: <strong>${escapeHtml(latestLabel)}</strong> (${allPeriods.length} bulan histori tersedia untuk tren di bawah).
+      <span style="margin-left:14px;">Part Group:
+        <select id="profile-pg-select" style="padding:4px 8px;border-radius:6px;margin-left:4px;">
+          <option value="">All Part Groups</option>
+          ${pgStats.map(x=>`<option value="${escapeHtml(x.g)}"${x.g===profilePartGroup?" selected":""}>${escapeHtml(x.g)}</option>`).join("")}
+        </select></span></div>
     <div class="kpi-row">
       ${kpiCard("Total Part No", totalSkus.toLocaleString("id-ID"), latestLabel, "neutral")}
       ${kpiCard("Total Inventory Value", fmtRpShort(totalValue), latestLabel, "neutral")}
@@ -2422,7 +2488,12 @@ async function renderInventoryProfile(){
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-profile-branch", "Inventory Status per Branch — " + latestLabel)}
+      ${chartCardShell("chart-profile-pg", "Inventory Value per Part Group — " + latestLabel)}
     </div>
+    ${tableHtml("Part Group Summary — " + latestLabel + " (all groups)",
+      ["Part Group","Part No","Inventory Value","% of Value","Dead Stock Value","Dead Stock %"],
+      pgStats.map(x => [escapeHtml(x.g), x.n.toLocaleString("id-ID"), fmtRp(x.val),
+        pgTotalVal ? (x.val/pgTotalVal*100).toFixed(1)+"%" : "-", fmtRp(x.dead), x.val ? Math.round(x.dead/x.val*100)+"%" : "-"]))}
     ${tableHtml("Inventory Status per Branch — " + latestLabel,
       ["Branch","Dead Stock","Slow","Medium","Fast","Total"],
       (() => {
@@ -2446,8 +2517,8 @@ async function renderInventoryProfile(){
     </div>
     ${(() => {
       const deadTitle = "Highest-Value Dead Stock (" + latestLabel + ")";
-      const html = tableHtml(deadTitle, ["Part No","Description","Model","Branch","Stock","Value"],
-        topDead.map(r=>[escapeHtml(r.partNo), escapeHtml(r.desc), escapeHtml(String(r.model==null?"":r.model).trim() || "-"), escapeHtml(r.branch), toNum(r.inStock), fmtRp(toNum(r.totalValue))]));
+      const html = tableHtml(deadTitle, ["Part No","Description","Part Group","Model","Branch","Stock","Value"],
+        topDead.map(r=>[escapeHtml(r.partNo), escapeHtml(r.desc), escapeHtml(r.partGroup), escapeHtml(String(r.model==null?"":r.model).trim() || "-"), escapeHtml(r.branch), toNum(r.inStock), fmtRp(toNum(r.totalValue))]));
       if(!allDead.length) return html;
       const head = `<div class="card-title-row" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
         <div class="card-title" style="margin:0;">${escapeHtml(deadTitle)}</div>
@@ -2460,15 +2531,18 @@ async function renderInventoryProfile(){
   const exportDeadBtn = document.getElementById("profile-export-dead");
   if(exportDeadBtn) exportDeadBtn.addEventListener("click", () => {
     const fd = d => (d instanceof Date && !isNaN(d.getTime())) ? fmtDate(d) : (d ? String(d) : "");
-    const rowsX = [["Branch","Part No","Description","Model","In Stock","Roll Out 12m","Last GR","Last GI","Aging by GR","Aging by GI","Price per Qty","Total Value","Period"]];
-    allDead.forEach(r => rowsX.push([r.branch, r.partNo, r.desc, String(r.model==null?"":r.model).trim(), toNum(r.inStock), toNum(r.rollOut12m),
+    const rowsX = [["Branch","Part No","Description","Part Group","Model","In Stock","Roll Out 12m","Last GR","Last GI","Aging by GR","Aging by GI","Price per Qty","Total Value","Period"]];
+    allDead.forEach(r => rowsX.push([r.branch, r.partNo, r.desc, r.partGroup, String(r.model==null?"":r.model).trim(), toNum(r.inStock), toNum(r.rollOut12m),
       fd(r.lastGrDate), fd(r.lastGiDate), r.agingByGr==null||r.agingByGr===""?"":toNum(r.agingByGr), r.agingByGi==null||r.agingByGi===""?"":toNum(r.agingByGi),
       toNum(r.pricePerQty), toNum(r.totalValue), latestLabel]));
-    rowsX.push(["TOTAL","","","", allDead.reduce((a,r)=>a+toNum(r.inStock),0),"","","","","","", allDead.reduce((a,r)=>a+toNum(r.totalValue),0), ""]);
+    rowsX.push(["TOTAL","","","","", allDead.reduce((a,r)=>a+toNum(r.inStock),0),"","","","","","", allDead.reduce((a,r)=>a+toNum(r.totalValue),0), ""]);
     ctDownloadExcel("Dead_Stock_Parts_" + currentCompany + "_" + latestLabel.replace(/\s+/g,"-") + ".xlsx", "Dead Stock", rowsX);
   });
   drawPie("chart-profile-value", catOrder, catOrder.map(c=>valueByCategory[c]||0), catOrder.map(c=>CAT_COLORS[c]));
   drawPie("chart-profile-count", modelLabels, modelCounts);
+  const pgSel = document.getElementById("profile-pg-select");
+  if(pgSel) pgSel.addEventListener("change", () => { profilePartGroup = pgSel.value; renderInventoryProfile(); });
+  drawBar("chart-profile-pg", pgStats.map(x=>x.g), [{label:"Inventory Value", data:pgStats.map(x=>x.val), color:COLORS.teal}]);
   drawBar("chart-profile-branch", branches, allCats.map(cat => ({
     label: cat, data: branches.map(b => branchCatValue[b][cat]||0), color: CAT_COLORS[cat]
   })), { stacked: true, pctTooltip: true });
