@@ -328,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-12-02"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-12-03"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -2247,17 +2247,18 @@ async function renderStock(){
   pageBody.innerHTML = pgSelectBar("stock", pgStkNames) + `
     <div class="kpi-row">
       ${kpiCard("Total Part No in Stock", totalSkus.toLocaleString("id-ID"), "", "neutral")}
-      ${kpiCard("Total Stock Value", fmtRpShort(totalValue), "berdasarkan Stock Value di sheet Stock On Hand", "neutral")}
+      ${kpiCard("Total Stock Value", fmtRpShort(totalValue), "Stock On Hand price", "neutral")}
       ${kpiCard("Branch", Object.keys(byBranch).length, "", "neutral")}
       ${kpiCard("Part No without Price", withoutPrice.toLocaleString("id-ID"), "kolom Unit Price kosong di Stock On Hand", withoutPrice>0?"bad":"good")}
     </div>
     <div class="charts-row">
-      ${chartCardShell("chart-stock-branch", "Stock Value per Branch")}
-      ${chartCardShell("chart-stock-pg", "Stock Value per Part Group")}
+      ${chartCardShell("chart-stock-branch", "Stock Value per Branch (Stock On Hand price)")}
+      ${chartCardShell("chart-stock-pg", "Stock Value per Part Group (Stock On Hand price)")}
     </div>
     ${tableHtml("Summary per Branch", ["Branch","Total Part No","Total Qty","Total Stock Value"], stockResumeRows)}
     ${tableHtml("Part Group Summary (all groups)", ["Part Group","Total Part No","Total Qty","Total Stock Value","% of Value"],
       pgStk.map(x=>[escapeHtml(x.g), x.n.toLocaleString("id-ID"), x.qty.toLocaleString("id-ID"), fmtRp(x.v), pgStkTotal?(x.v/pgStkTotal*100).toFixed(1)+"%":"-"]))}
+    <div class="empty-note">Catatan sumber nilai: nilai di halaman ini dihitung dari harga di tab Stock On Hand. Angkanya dapat berbeda dari halaman Inventory Profile karena dasar harga kedua tab berbeda — jumlah part dan Qty tetap sama.</div>
     ${tableHtml("Highest-Value Items", ["Item No","Description","Part Group","Branch","Stock","Value"],
       topItems.map(r=>[escapeHtml(r.item), escapeHtml(r.desc), escapeHtml(r.partGroup), escapeHtml(r.branch), toNum(r.inStock), fmtRp(r.stockValue)]))}
   `;
@@ -2555,7 +2556,7 @@ async function renderInventoryProfile(){
         </select></span></div>
     <div class="kpi-row">
       ${kpiCard("Total Part No", totalSkus.toLocaleString("id-ID"), latestLabel, "neutral")}
-      ${kpiCard("Total Inventory Value", fmtRpShort(totalValue), latestLabel, "neutral")}
+      ${kpiCard("Total Inventory Value", fmtRpShort(totalValue), latestLabel + " · Inventory Profile price", "neutral")}
       ${kpiCard("Dead Stock", fmtRpShort(deadValue), deadCount + " Part No · " + (totalValue?Math.round(deadValue/totalValue*100):0) + "% of total value", deadValue>0?"bad":"good")}
       ${kpiCard("Fast Moving", fmtRpShort(fastValue), (totalValue?Math.round(fastValue/totalValue*100):0) + "% of total value", "good")}
     </div>
@@ -2565,7 +2566,7 @@ async function renderInventoryProfile(){
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-profile-branch", "Inventory Status per Branch — " + latestLabel)}
-      ${chartCardShell("chart-profile-pg", "Inventory Value per Part Group — " + latestLabel)}
+      ${chartCardShell("chart-profile-pg", "Inventory Value per Part Group — " + latestLabel + " (Inventory Profile price)")}
     </div>
     ${tableHtml("Part Group Summary — " + latestLabel + " (all groups)",
       ["Part Group","Part No","Inventory Value","% of Value","Dead Stock Value","Dead Stock %","Delivered Qty (last 12 months)","% of Delivered Qty"],
@@ -2604,7 +2605,7 @@ async function renderInventoryProfile(){
       </div>`;
       return html.replace('<div class="card-title">' + escapeHtml(deadTitle) + '</div>', () => head);
     })()}
-    <div class="empty-note">Catatan: KPI, chart kategori, breakdown per cabang, dan tabel Dead Stock di atas hanya untuk bulan terbaru (tidak dijumlah dari semua bulan). Filter Tanggal tidak berlaku di halaman ini — gunakan chart tren untuk melihat pergerakan antar bulan.</div>
+    <div class="empty-note">Catatan: KPI, chart kategori, breakdown per cabang, dan tabel Dead Stock di atas hanya untuk bulan terbaru (tidak dijumlah dari semua bulan). Filter Tanggal tidak berlaku di halaman ini — gunakan chart tren untuk melihat pergerakan antar bulan.<br>Catatan sumber nilai: nilai di halaman ini dihitung dari kolom Price/Qty di tab Inventory Profile. Angkanya dapat berbeda dari halaman Stock Inventory (harga dari tab Stock On Hand) karena dasar harga kedua tab berbeda — jumlah part dan Qty tetap sama.</div>
   `;
   const exportDeadBtn = document.getElementById("profile-export-dead");
   if(exportDeadBtn) exportDeadBtn.addEventListener("click", () => {
