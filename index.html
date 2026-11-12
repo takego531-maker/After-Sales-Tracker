@@ -328,7 +328,7 @@ function fmtRefreshInterval(ms){
   const min = Math.round(sec/60);
   return min + " menit";
 }
-const BUILD_TAG = "build-2026-11-12-01"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
+const BUILD_TAG = "build-2026-11-12-02"; // ganti tiap ada revisi file, buat pastikan yang dibuka versi terbaru
 document.title = "[" + BUILD_TAG + "] After Sales Tracker"; // supaya kelihatan di tab browser, tidak mungkin kelewat
 
 /* Nama tab di Google Sheet — harus persis sama dengan hasil import xlsx */
@@ -2067,7 +2067,16 @@ async function renderAbcFms(){
   });
   rows = rows.filter(r => r.part); // buang baris sisa formula/validasi (kosong tapi kebaca "ada isi")
   if(currentCompany === "IKE" && rows.length === 0){ pageBody.innerHTML = noIkeDataBanner("ABC-FMS Analysist"); return; }
+  await loadPartGroupOverrides();
+  rows.forEach(r => { r.partGroup = partGroupOf(r.part, r.desc); });
   rows = applyFilters(rows, null, "branch"); // sudah per cabang dari sumbernya — tinggal disaring sesuai filter Cabang
+  const pgAbc = pgOrdered(Array.from(new Set(rows.map(r=>r.partGroup)))).map(g => {
+    const rs = rows.filter(r=>r.partGroup===g), no = rs.filter(r=>r.suggestionStatus==="Need To Order");
+    return { g, n:rs.length, v:rs.reduce((a,r)=>a+toNum(r.value),0), a:rs.filter(r=>r.abc==="A").length, need:no.length, ov:no.reduce((a,r)=>a+toNum(r.orderValue),0) };
+  }).sort((a,b)=>b.v-a.v);
+  const pgAbcNames = pgOrdered(pgAbc.map(x=>x.g));
+  if(pgPageFilter.abc && !pgAbcNames.includes(pgPageFilter.abc)) pgPageFilter.abc = "";
+  if(pgPageFilter.abc) rows = rows.filter(r => r.partGroup === pgPageFilter.abc);
 
   const totalSkus = rows.length;
   const totalValue = rows.reduce((a,r)=>a+toNum(r.value),0);
@@ -2086,7 +2095,7 @@ async function renderAbcFms(){
   const topNeedOrder = [...needOrder].sort((a,b) => (abcRank[a.abc]-abcRank[b.abc]) || (toNum(b.orderValue)-toNum(a.orderValue))).slice(0, 15);
   const topNeedCheck = [...needCheck].sort((a,b) => (abcRank[a.abc]-abcRank[b.abc]) || (toNum(b.value)-toNum(a.value))).slice(0, 10);
 
-  pageBody.innerHTML = `
+  pageBody.innerHTML = pgSelectBar("abc", pgAbcNames) + `
     <div class="kpi-row">
       ${kpiCard("Active Part No", totalSkus.toLocaleString("id-ID"), "Total value " + fmtRpShort(totalValue), "neutral")}
       ${kpiCard("Class A Value Share", totalValue?Math.round(classAValue/totalValue*100)+"%":"0%", classA.length + " Part No", "good")}
@@ -2098,17 +2107,20 @@ async function renderAbcFms(){
       ${chartCardShell("chart-abc-fms", "FMS Distribution", "F = Fast, sering bergerak · M = Medium · S = Slow, jarang bergerak")}
     </div>
     ${tableHtml("🔴 Order Suggestion — Order Immediately (sorted Class A→C, then order value)",
-      ["Part No","Description","ABC","FMS","Current Inv.","In Transit","Target Stock","Order Freq. 12 Months","Suggested Order Qty","Estimated Value"],
-      topNeedOrder.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.abc), escapeHtml(r.fms),
+      ["Part No","Description","Part Group","ABC","FMS","Current Inv.","In Transit","Target Stock","Order Freq. 12 Months","Suggested Order Qty","Estimated Value"],
+      topNeedOrder.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.partGroup), escapeHtml(r.abc), escapeHtml(r.fms),
         toNum(r.currentInventory), toNum(r.inTransit), Math.round(toNum(r.stockToCarry)), toNum(r.orderFreq), Math.round(-toNum(r.monthlyOrder)), fmtRp(toNum(r.orderValue))]))}
     ${tableHtml("🟡 Needs Manual Check (zero stock, but historically rarely ordered)",
-      ["Part No","Description","ABC","FMS","Current Inv.","In Transit","Target Stock","Order Freq. 12 Months"],
-      topNeedCheck.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.abc), escapeHtml(r.fms),
+      ["Part No","Description","Part Group","ABC","FMS","Current Inv.","In Transit","Target Stock","Order Freq. 12 Months"],
+      topNeedCheck.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.partGroup), escapeHtml(r.abc), escapeHtml(r.fms),
         toNum(r.currentInventory), toNum(r.inTransit), Math.round(toNum(r.stockToCarry)), toNum(r.orderFreq)]))}
-    ${tableHtml("Highest-Value Parts", ["Part No","Description","ABC","FMS","Value"],
-      topN(rows, r=>toNum(r.value), 8).map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.abc), escapeHtml(r.fms), fmtRp(toNum(r.value))]))}
+    ${tableHtml("Part Group Summary (all groups)", ["Part Group","Part No","Class A Part No","Movement Value (12 Months)","Order Immediately","Estimated Order Value"],
+      pgAbc.map(x=>[escapeHtml(x.g), x.n.toLocaleString("id-ID"), x.a.toLocaleString("id-ID"), fmtRp(x.v), x.need.toLocaleString("id-ID"), fmtRp(x.ov)]))}
+    ${tableHtml("Highest-Value Parts", ["Part No","Description","Part Group","ABC","FMS","Value"],
+      topN(rows, r=>toNum(r.value), 8).map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.partGroup), escapeHtml(r.abc), escapeHtml(r.fms), fmtRp(toNum(r.value))]))}
     <div class="empty-note">Data ini snapshot harian dari sheet Analysis (bukan real-time detik-ke-detik) — sesuai jadwal refresh otomatis jam 06:00.</div>
   `;
+  pgWireSelect("abc", renderAbcFms);
   const ABC_COLORS = { A: COLORS.blue, B: COLORS.green, C: COLORS.orange };
   drawBar("chart-abc-class", ["A","B","C"], [{label:"Value", data:["A","B","C"].map(k=>valueByClass[k]||0), color:["A","B","C"].map(k=>ABC_COLORS[k])}]);
   const FMS_ORDER = ["F","M","S"];
@@ -2125,9 +2137,19 @@ async function renderOsa(){
   let rowsRaw = rowsToObjects(s, { date:1, item:2, desc:3, warehouseCode:5, warehouse:6, qty:4, realisasi:8, cek:9 });
   rowsRaw = rowsRaw.filter(r => r.item); // buang baris sisa formula/validasi (kosong tapi kebaca "ada isi")
   if(currentCompany === "IKE" && rowsRaw.length === 0){ pageBody.innerHTML = noIkeDataBanner("On Shelves Availability"); return; }
-  rowsRaw.forEach(r => { r.branch = r.warehouseCode ? String(r.warehouseCode).split("-")[0].trim() : ""; });
-  const rowsAllDates = applyFilters(rowsRaw, null, "branch"); // untuk chart tren — tidak ikut filter tanggal
-  let rows = applyFilters(rowsRaw, "date", "branch"); // untuk KPI & tabel — ikut filter tanggal
+  await loadPartGroupOverrides();
+  rowsRaw.forEach(r => { r.branch = r.warehouseCode ? String(r.warehouseCode).split("-")[0].trim() : ""; r.partGroup = partGroupOf(r.item, r.desc); });
+  const rowsAllDates0 = applyFilters(rowsRaw, null, "branch");
+  const rows0 = applyFilters(rowsRaw, "date", "branch");
+  const pgOsa = pgOrdered(Array.from(new Set(rows0.map(r=>r.partGroup)))).map(g => {
+    const rs = rows0.filter(r=>r.partGroup===g), ok = rs.filter(r=>toNum(r.cek)>=0).length;
+    return { g, n:rs.length, ok, short: rs.filter(r=>toNum(r.cek)<0).reduce((a,r)=>a+Math.abs(toNum(r.cek)),0) };
+  }).sort((a,b)=>b.n-a.n);
+  const pgOsaNames = pgOrdered(pgOsa.map(x=>x.g));
+  if(pgPageFilter.osa && !pgOsaNames.includes(pgPageFilter.osa)) pgPageFilter.osa = "";
+  const pgSelO = pgPageFilter.osa;
+  const rowsAllDates = pgSelO ? rowsAllDates0.filter(r=>r.partGroup===pgSelO) : rowsAllDates0; // untuk chart tren — tidak ikut filter tanggal
+  let rows = pgSelO ? rows0.filter(r=>r.partGroup===pgSelO) : rows0; // untuk KPI & tabel — ikut filter tanggal
 
   const total = rows.length;
   const fulfilled = rows.filter(r=>toNum(r.cek)>=0).length;
@@ -2155,7 +2177,7 @@ async function renderOsa(){
     return [escapeHtml(branch), branchRows.length.toLocaleString("id-ID"), branchFulfilled.toLocaleString("id-ID"), branchRate+"%"];
   });
 
-  pageBody.innerHTML = `
+  pageBody.innerHTML = pgSelectBar("osa", pgOsaNames) + `
     <div class="kpi-row">
       ${kpiCard("Fulfillment Rate", fulfillRate+"%", fulfilled + " dari " + total + " permintaan", fulfillRate>=85?"good":"bad")}
       ${kpiCard("Short Stock Items", shortfallItems.length.toLocaleString("id-ID"), "dari " + total + " permintaan", "bad")}
@@ -2170,9 +2192,12 @@ async function renderOsa(){
       ${chartCardShell("chart-osa-warehouse", "Shortfall per Warehouse")}
     </div>
     ${tableHtml("Summary per Branch", ["Branch","Total Demand (Part No)","Fulfilled (Part No)","Fulfillment Rate %"], osaResumeRows)}
-    ${tableHtml("Items with Largest Shortfall", ["Item No","Description","Warehouse","Requested","Fulfilled","Shortfall"],
-      worst.filter(r=>toNum(r.cek)<0).map(r=>[escapeHtml(r.item), escapeHtml(r.desc), escapeHtml(r.warehouse), toNum(r.qty), toNum(r.realisasi), Math.abs(toNum(r.cek))]))}
+    ${tableHtml("Part Group Summary (all groups)", ["Part Group","Total Demand (Part No)","Fulfilled (Part No)","Fulfillment Rate %","Qty Short"],
+      pgOsa.map(x=>[escapeHtml(x.g), x.n.toLocaleString("id-ID"), x.ok.toLocaleString("id-ID"), x.n?Math.round(x.ok/x.n*100)+"%":"-", x.short.toLocaleString("id-ID")]))}
+    ${tableHtml("Items with Largest Shortfall", ["Item No","Description","Part Group","Warehouse","Requested","Fulfilled","Shortfall"],
+      worst.filter(r=>toNum(r.cek)<0).map(r=>[escapeHtml(r.item), escapeHtml(r.desc), escapeHtml(r.partGroup), escapeHtml(r.warehouse), toNum(r.qty), toNum(r.realisasi), Math.abs(toNum(r.cek))]))}
   `;
+  pgWireSelect("osa", renderOsa);
   drawLine("chart-osa-trend", trendPeriods.map(periodLabel), [{label:"Fulfillment Rate (%)", data:rateByPeriod.map(v=>v==null?0:v), color:COLORS.teal}]);
   drawBar("chart-osa-ordersupply", trendPeriods.map(periodLabel), [
     { label:"Total Demand (Part No)", data:totalReqByPeriod, color:COLORS.gold },
@@ -2194,8 +2219,15 @@ async function renderStock(){
   let rows = rowsToObjects(stockS, { item:0, desc:1, uom:2, bin:3, inStock:4, branch:5, price:6, stockValue:7 });
   rows = rows.filter(r => r.item); // buang baris sisa formula/validasi (kosong tapi kebaca "ada isi")
   if(currentCompany === "IKE" && rows.length === 0){ pageBody.innerHTML = noIkeDataBanner("Stock Inventory"); return; }
-  rows.forEach(r => { r.price = toNum(r.price); r.stockValue = toNum(r.stockValue); });
+  await loadPartGroupOverrides();
+  rows.forEach(r => { r.price = toNum(r.price); r.stockValue = toNum(r.stockValue); r.partGroup = partGroupOf(r.item, r.desc); });
   rows = applyFilters(rows, null, "branch");
+  const pgStk = Object.entries(groupSum(rows, r=>r.partGroup, r=>r.stockValue)).map(([g,v]) => ({ g, v,
+    n: rows.filter(r=>r.partGroup===g).length, qty: rows.filter(r=>r.partGroup===g).reduce((a,r)=>a+toNum(r.inStock),0) })).sort((a,b)=>b.v-a.v);
+  const pgStkTotal = pgStk.reduce((a,x)=>a+x.v,0);
+  const pgStkNames = pgOrdered(pgStk.map(x=>x.g));
+  if(pgPageFilter.stock && !pgStkNames.includes(pgPageFilter.stock)) pgPageFilter.stock = "";
+  if(pgPageFilter.stock) rows = rows.filter(r => r.partGroup === pgPageFilter.stock);
 
   const totalSkus = rows.length;
   const totalValue = rows.reduce((a,r)=>a+r.stockValue,0);
@@ -2212,7 +2244,7 @@ async function renderStock(){
     return [escapeHtml(branch), branchRows.length.toLocaleString("id-ID"), qty.toLocaleString("id-ID"), fmtRp(value)];
   });
 
-  pageBody.innerHTML = `
+  pageBody.innerHTML = pgSelectBar("stock", pgStkNames) + `
     <div class="kpi-row">
       ${kpiCard("Total Part No in Stock", totalSkus.toLocaleString("id-ID"), "", "neutral")}
       ${kpiCard("Total Stock Value", fmtRpShort(totalValue), "berdasarkan Stock Value di sheet Stock On Hand", "neutral")}
@@ -2221,11 +2253,16 @@ async function renderStock(){
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-stock-branch", "Stock Value per Branch")}
+      ${chartCardShell("chart-stock-pg", "Stock Value per Part Group")}
     </div>
     ${tableHtml("Summary per Branch", ["Branch","Total Part No","Total Qty","Total Stock Value"], stockResumeRows)}
-    ${tableHtml("Highest-Value Items", ["Item No","Description","Branch","Stock","Value"],
-      topItems.map(r=>[escapeHtml(r.item), escapeHtml(r.desc), escapeHtml(r.branch), toNum(r.inStock), fmtRp(r.stockValue)]))}
+    ${tableHtml("Part Group Summary (all groups)", ["Part Group","Total Part No","Total Qty","Total Stock Value","% of Value"],
+      pgStk.map(x=>[escapeHtml(x.g), x.n.toLocaleString("id-ID"), x.qty.toLocaleString("id-ID"), fmtRp(x.v), pgStkTotal?(x.v/pgStkTotal*100).toFixed(1)+"%":"-"]))}
+    ${tableHtml("Highest-Value Items", ["Item No","Description","Part Group","Branch","Stock","Value"],
+      topItems.map(r=>[escapeHtml(r.item), escapeHtml(r.desc), escapeHtml(r.partGroup), escapeHtml(r.branch), toNum(r.inStock), fmtRp(r.stockValue)]))}
   `;
+  pgWireSelect("stock", renderStock);
+  drawBar("chart-stock-pg", pgStk.map(x=>x.g), [{label:"Value", data:pgStk.map(x=>x.v), color:COLORS.gold}]);
   const branchEntries = Object.entries(byBranch).sort((a,b)=>b[1]-a[1]);
   drawBar("chart-stock-branch", branchEntries.map(e=>e[0]), [{label:"Value", data:branchEntries.map(e=>e[1]), color:COLORS.teal}]);
 }
@@ -2273,7 +2310,16 @@ async function renderInventoryTurnover(){
     r.priceSource = priceFromStock != null ? "stock" : "abcAvg";
     r.stockValue = toNum(r.currentInventory) * r.priceUsed;
     r.turnover = r.stockValue > 0 ? r.movementValue / r.stockValue : null;
+    r.partGroup = partGroupOf(r.part, r.desc);
   });
+  // Ringkasan per Part Group (semua group) — sebelum filter group
+  const pgTo = pgOrdered(Array.from(new Set(rows.map(r=>r.partGroup)))).map(g => {
+    const rs = rows.filter(r=>r.partGroup===g), st = rs.filter(r=>r.stockValue>0).reduce((a,r)=>a+r.stockValue,0), mv = rs.reduce((a,r)=>a+r.movementValue,0);
+    return { g, n:rs.length, mv, st, to: st >= TURNOVER_MIN_STOCK_VALUE ? mv/st : null };
+  }).sort((a,b)=>b.st-a.st);
+  const pgToNames = pgOrdered(pgTo.map(x=>x.g));
+  if(pgPageFilter.turnover && !pgToNames.includes(pgPageFilter.turnover)) pgPageFilter.turnover = "";
+  if(pgPageFilter.turnover) rows = rows.filter(r => r.partGroup === pgPageFilter.turnover);
 
   const withStock = rows.filter(r => r.stockValue > 0);
   const totalMovement = rows.reduce((a,r)=>a+r.movementValue, 0);
@@ -2316,7 +2362,7 @@ async function renderInventoryTurnover(){
     !t.isRepresentative ? "⚪ Not Representative" : (t.turnover>=TURNOVER_TARGET ? "✅ Achieved" : "❌ Below Target")
   ]);
 
-  pageBody.innerHTML = `
+  pageBody.innerHTML = pgSelectBar("turnover", pgToNames) + `
     <div class="kpi-row">
       ${kpiCard("Inventory Turnover", overallTurnover!=null?overallTurnover.toFixed(1)+"x":"—", "Company target: "+TURNOVER_TARGET+"x/year", overallTurnover!=null?(overallTurnover>=TURNOVER_TARGET?"good":"bad"):"neutral")}
       ${kpiCard("Days of Supply", daysOfSupply!=null?daysOfSupply+" hari":"—", "how long stock will last", "neutral")}
@@ -2328,12 +2374,17 @@ async function renderInventoryTurnover(){
       ${chartCardShell("chart-turnover-abc", "Turnover per ABC Class", "A = Nilai Tinggi (prioritas utama) · B = Nilai Sedang · C = Nilai Rendah (banyak jenis, kontribusi kecil). Class A idealnya berputar lebih cepat dari C.")}
     </div>
     ${tableHtml("🔴 Needs Attention — Lowest Turnover (largest stock value tied up)",
-      ["Part No","Description","Branch","ABC","Stock Value","Turnover"],
-      topUnderperform.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.branch), escapeHtml(r.abc), fmtRp(r.stockValue), r.turnover.toFixed(1)+"x"]))}
+      ["Part No","Description","Part Group","Branch","ABC","Stock Value","Turnover"],
+      topUnderperform.map(r=>[escapeHtml(r.part), escapeHtml(r.desc), escapeHtml(r.partGroup), escapeHtml(r.branch), escapeHtml(r.abc), fmtRp(r.stockValue), r.turnover.toFixed(1)+"x"]))}
     ${tableHtml("Summary per Branch", ["Branch","Issued Value (12 Months)","Stock Value","Turnover","Status"], resumeRows)}
+    ${tableHtml("Turnover per Part Group (all groups)", ["Part Group","Part No","Issued Value (12 Months)","Stock Value","Turnover","Status"],
+      pgTo.map(x=>[escapeHtml(x.g), x.n.toLocaleString("id-ID"), fmtRp(x.mv), fmtRp(x.st),
+        x.to!=null ? x.to.toFixed(1)+"x" : "N/A (stok < "+fmtRpShort(TURNOVER_MIN_STOCK_VALUE)+")",
+        x.to==null ? "⚪ Not Representative" : (x.to>=TURNOVER_TARGET ? "✅ Achieved" : "❌ Below Target")]))}
     <div class="empty-note">Catatan: Turnover di sini dihitung dari Nilai Keluar 12 bulan ÷ Nilai Stok SAAT INI (snapshot terbaru) — pendekatan ini dipakai karena histori stok bulanan baru mulai dikumpulkan. Begitu histori beberapa bulan terkumpul, perhitungan bisa ditingkatkan pakai rata-rata stok yang lebih presisi. Cabang/kelas dengan nilai stok di bawah Rp 1 Juta ditandai "N/A" karena rasionya bisa melonjak tidak wajar meski pembilangnya (nilai keluar) kecil.</div>
   `;
 
+  pgWireSelect("turnover", renderInventoryTurnover);
   const branchColors = turnoverByBranch.map(t => !t.isRepresentative ? "#a8a29e" : (t.turnover>=TURNOVER_TARGET ? COLORS.green : COLORS.red));
   drawBar("chart-turnover-branch", turnoverByBranch.map(t=>t.branch), [{label:"Turnover (x)", data:turnoverByBranch.map(t=>t.isRepresentative?Number(t.turnover.toFixed(2)):0), color:branchColors}]);
   const abcColors = turnoverByAbc.map(t => !t.isRepresentative ? "#a8a29e" : (t.turnover>=TURNOVER_TARGET ? COLORS.green : COLORS.red));
@@ -2395,6 +2446,21 @@ function partGroupOf(partNo, desc){
   return PART_GROUP_OTHER;
 }
 let profilePartGroup = ""; // filter Part Group di halaman Inventory Profile ("" = semua)
+/* Filter Part Group per halaman Parts (selain Inventory Profile) */
+const pgPageFilter = { stock:"", delivery:"", abc:"", turnover:"", osa:"" };
+function pgSelectBar(page, groupNames){
+  if(pgPageFilter[page] && !groupNames.includes(pgPageFilter[page])) pgPageFilter[page] = "";
+  return `<div class="empty-note" style="margin-bottom:12px;">Part Group:
+    <select id="pg-select-${page}" style="padding:4px 8px;border-radius:6px;margin-left:4px;">
+      <option value="">All Part Groups</option>
+      ${groupNames.map(g=>`<option value="${escapeHtml(g)}"${g===pgPageFilter[page]?" selected":""}>${escapeHtml(g)}</option>`).join("")}
+    </select> <span style="opacity:.7;">Filter ini berlaku untuk seluruh halaman; tabel Part Group Summary tetap menampilkan semua group.</span></div>`;
+}
+function pgWireSelect(page, rerender){
+  const el = document.getElementById("pg-select-"+page);
+  if(el) el.addEventListener("change", () => { pgPageFilter[page] = el.value; rerender(); });
+}
+function pgOrdered(names){ return PART_GROUP_ORDER.filter(g => names.includes(g)).concat(names.filter(g => !PART_GROUP_ORDER.includes(g))); }
 
 async function renderInventoryProfile(){
   const s = await fetchSheet("invProfile");
@@ -2421,6 +2487,17 @@ async function renderInventoryProfile(){
     return { g, n: rs.length, val, dead };
   }).filter(x => x.n > 0).sort((a,b)=>b.val-a.val);
   const pgTotalVal = pgStats.reduce((a,x)=>a+x.val,0);
+  // Qty delivery 12 bulan terakhir per Part Group (dari tab Parts Delivery; kalau tab belum ada -> kolom "n/a")
+  let pgDelQty = null, pgDelTot = 0;
+  try{
+    const ds = await fetchSheet("partsDelivery");
+    const dr = applyFilters(rowsToObjects(ds, { date:2, item:4, desc:5, qty:6, branch:8 }).filter(r => r.item && r.date instanceof Date), null, "branch");
+    const cutoff = new Date(); cutoff.setFullYear(cutoff.getFullYear()-1);
+    pgDelQty = {};
+    dr.filter(r => r.date >= cutoff).forEach(r => { const g = partGroupOf(r.item, r.desc); pgDelQty[g] = (pgDelQty[g]||0) + toNum(r.qty); });
+    pgDelTot = Object.values(pgDelQty).reduce((a,v)=>a+v,0);
+    if(!pgDelTot) pgDelQty = null;
+  }catch(e){ pgDelQty = null; }
   if(profilePartGroup && !pgStats.some(x=>x.g===profilePartGroup)) profilePartGroup = "";
   if(profilePartGroup) rows = rows.filter(r => r.partGroup === profilePartGroup);
   const rowsLatest = profilePartGroup ? rowsLatestAllGroups.filter(r => r.partGroup === profilePartGroup) : rowsLatestAllGroups;
@@ -2491,9 +2568,10 @@ async function renderInventoryProfile(){
       ${chartCardShell("chart-profile-pg", "Inventory Value per Part Group — " + latestLabel)}
     </div>
     ${tableHtml("Part Group Summary — " + latestLabel + " (all groups)",
-      ["Part Group","Part No","Inventory Value","% of Value","Dead Stock Value","Dead Stock %"],
+      ["Part Group","Part No","Inventory Value","% of Value","Dead Stock Value","Dead Stock %","Delivered Qty (last 12 months)","% of Delivered Qty"],
       pgStats.map(x => [escapeHtml(x.g), x.n.toLocaleString("id-ID"), fmtRp(x.val),
-        pgTotalVal ? (x.val/pgTotalVal*100).toFixed(1)+"%" : "-", fmtRp(x.dead), x.val ? Math.round(x.dead/x.val*100)+"%" : "-"]))}
+        pgTotalVal ? (x.val/pgTotalVal*100).toFixed(1)+"%" : "-", fmtRp(x.dead), x.val ? Math.round(x.dead/x.val*100)+"%" : "-",
+        pgDelQty ? (pgDelQty[x.g]||0).toLocaleString("id-ID") : "n/a", pgDelQty && pgDelTot ? ((pgDelQty[x.g]||0)/pgDelTot*100).toFixed(1)+"%" : "-"]))}
     ${tableHtml("Inventory Status per Branch — " + latestLabel,
       ["Branch","Dead Stock","Slow","Medium","Fast","Total"],
       (() => {
@@ -2559,8 +2637,17 @@ async function renderPartsDelivery(){
   });
   rowsRaw = rowsRaw.filter(r => r.deliveryNo || r.date instanceof Date); // buang baris sisa formula/validasi
   if(currentCompany === "IKE" && rowsRaw.length === 0){ pageBody.innerHTML = noIkeDataBanner("Parts Delivery"); return; }
-  const rowsAllDates = applyFilters(rowsRaw, null, "branch"); // untuk chart tren — tidak ikut filter tanggal
-  const rows = applyFilters(rowsRaw, "date", "branch"); // untuk KPI & tabel — ikut filter tanggal
+  await loadPartGroupOverrides();
+  rowsRaw.forEach(r => { r.partGroup = partGroupOf(r.item, r.desc); });
+  const rowsAllDates0 = applyFilters(rowsRaw, null, "branch");
+  const rows0 = applyFilters(rowsRaw, "date", "branch");
+  const pgDel = Object.entries(groupSum(rows0, r=>r.partGroup, r=>toNum(r.qty))).map(([g,q]) => ({ g, qty:q, lines: rows0.filter(r=>r.partGroup===g).length })).sort((a,b)=>b.qty-a.qty);
+  const pgDelTotal = pgDel.reduce((a,x)=>a+x.qty,0);
+  const pgDelNames = pgOrdered(pgDel.map(x=>x.g));
+  if(pgPageFilter.delivery && !pgDelNames.includes(pgPageFilter.delivery)) pgPageFilter.delivery = "";
+  const pgSelD = pgPageFilter.delivery;
+  const rowsAllDates = pgSelD ? rowsAllDates0.filter(r=>r.partGroup===pgSelD) : rowsAllDates0; // untuk chart tren — tidak ikut filter tanggal
+  const rows = pgSelD ? rows0.filter(r=>r.partGroup===pgSelD) : rows0; // untuk KPI & tabel — ikut filter tanggal
 
   const totalLines = rows.length;
   const totalQty = rows.reduce((a,r)=>a+toNum(r.qty),0);
@@ -2583,15 +2670,15 @@ async function renderPartsDelivery(){
   });
 
   // Item Terlaris (by Qty)
-  const descByItem = {};
-  rows.forEach(r => { if(r.item && !descByItem[r.item]) descByItem[r.item] = r.desc; });
+  const descByItem = {}, groupByItem = {};
+  rows.forEach(r => { if(r.item && !descByItem[r.item]){ descByItem[r.item] = r.desc; groupByItem[r.item] = r.partGroup; } });
   const qtyByItem = groupSum(rows, r=>r.item, r=>toNum(r.qty));
   const topItems = Object.entries(qtyByItem).filter(([item])=>item).sort((a,b)=>b[1]-a[1]).slice(0,10)
-    .map(([item,qty]) => [item, escapeHtml(descByItem[item]||""), qty.toLocaleString("id-ID")]);
+    .map(([item,qty]) => [item, escapeHtml(descByItem[item]||""), escapeHtml(groupByItem[item]||""), qty.toLocaleString("id-ID")]);
 
   const recent = topN(rows, r=>r.date instanceof Date ? r.date.getTime() : 0, 8);
 
-  pageBody.innerHTML = `
+  pageBody.innerHTML = pgSelectBar("delivery", pgDelNames) + `
     <div class="kpi-row">
       ${kpiCard("Total Delivery", totalLines.toLocaleString("id-ID"), "parts delivery lines", "neutral")}
       ${kpiCard("Total Qty Delivered", totalQty.toLocaleString("id-ID"), "", "neutral")}
@@ -2601,12 +2688,17 @@ async function renderPartsDelivery(){
     </div>
     <div class="charts-row">
       ${chartCardShell("chart-pd-trend", "Delivery Count per Month")}
+      ${chartCardShell("chart-pd-pg", "Delivered Qty per Part Group")}
     </div>
     ${tableHtml("Summary per Branch", ["Branch","Total Delivery","Total Qty"], pdResumeRows)}
-    ${tableHtml("Best-Selling Items (by Qty)", ["Item No","Description","Total Qty"], topItems)}
-    ${tableHtml("Latest Deliveries", ["Date","Customer","Item No","Description","Qty","Branch"],
-      recent.map(r=>[fmtDate(r.date), escapeHtml(r.customer), r.item, escapeHtml(r.desc), toNum(r.qty), escapeHtml(r.branch)]))}
+    ${tableHtml("Part Group Summary (all groups, selected period)", ["Part Group","Total Delivery","Total Qty","% of Qty"],
+      pgDel.map(x=>[escapeHtml(x.g), x.lines.toLocaleString("id-ID"), x.qty.toLocaleString("id-ID"), pgDelTotal?(x.qty/pgDelTotal*100).toFixed(1)+"%":"-"]))}
+    ${tableHtml("Best-Selling Items (by Qty)", ["Item No","Description","Part Group","Total Qty"], topItems)}
+    ${tableHtml("Latest Deliveries", ["Date","Customer","Item No","Description","Part Group","Qty","Branch"],
+      recent.map(r=>[fmtDate(r.date), escapeHtml(r.customer), r.item, escapeHtml(r.desc), escapeHtml(r.partGroup), toNum(r.qty), escapeHtml(r.branch)]))}
   `;
+  pgWireSelect("delivery", renderPartsDelivery);
+  drawBar("chart-pd-pg", pgDel.map(x=>x.g), [{label:"Qty", data:pgDel.map(x=>x.qty), color:COLORS.gold}]);
   drawBar("chart-pd-trend", periods.map(periodLabel), [{label:"Delivery Count", data:periods.map(p=>byPeriod[p]||0), color:COLORS.teal}]);
 }
 
